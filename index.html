@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebAR 体験ポータル</title>
+  <title>Portal</title>
   <style>
     body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #121212; color: #fff; }
     .card { text-align: center; padding: 2rem; background: #1e1e1e; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 320px; width: 90%; }
@@ -19,30 +19,37 @@
 </head>
 <body>
   <div class="card">
-    <h2>WebAR 体験ポータル</h2>
+    <h2>Portal</h2>
     
     <!-- パスワード入力エリア -->
     <div id="login-form">
-      <p>パスワードを入力してください</p>
-      <input type="password" id="pass-input" placeholder="Password">
+      <p>Passcode</p>
+      <input type="password" id="pass-input" placeholder="****">
       <br>
-      <button onclick="checkPass()">送信</button>
-      <p id="error-msg" class="error hidden">パスワードが違います</p>
+      <button onclick="checkPass()">Enter</button>
+      <p id="error-msg" class="error hidden">認証エラー</p>
     </div>
 
     <!-- 認証完了後に表示されるコンテンツ -->
     <div id="content" class="hidden">
-      <p>以下のQRまたはURLからアクセスしてください</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://cams-cherry-vertex-manitoba.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://cams-cherry-vertex-manitoba.trycloudflare.com" target="_blank" rel="noopener">https://cams-cherry-vertex-manitoba.trycloudflare.com</a>
+      <p>Access Link</p>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://bernard-bit-locks-own.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://bernard-bit-locks-own.trycloudflare.com" target="_blank" rel="noopener">https://bernard-bit-locks-own.trycloudflare.com</a>
     </div>
   </div>
 
   <script>
-    function checkPass() {
+    async function checkPass() {
       const pass = document.getElementById('pass-input').value;
-      // ★任意のパスワードに変更可能（現在は "1234"）
-      if (pass === "1234") {
+      
+      // 入力値をブラウザ側でSHA-256ハッシュ化
+      const msgBuffer = new TextEncoder().encode(pass);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      
+      // env.phpから生成されたハッシュ値と照合
+      if (hashHex === "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4") {
         document.getElementById('login-form').classList.add('hidden');
         document.getElementById('content').classList.remove('hidden');
       } else {
