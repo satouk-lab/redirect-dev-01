@@ -173,7 +173,6 @@
     const APP_VERSION = "v3.2.2 Fixed Key Sync";
     console.log("System Version:", APP_VERSION);
 
-    // ★ run.ps1 実行時に自動書き換えされる変数
     const ENC_GIST_URL = "4b5aa0eef3a42c885f35e6a370d6dc48c5a905bcef567cc92317efc032f1de320704bc8a97a12af89ea912ea8b3b9f28805ada5d41978022a65f9dc470130a72bf993353618bdf581abe1e9eb5d166cd974a0bacbf457a379427377b64c458ed";
 
     function togglePassword() {
@@ -205,14 +204,12 @@
       return bytes;
     }
 
-    // パスワードからGist復号用の動的IV（16バイト）を派生生成
     async function deriveGistIv(pass) {
       const buf = new TextEncoder().encode(pass + "_gist_iv_salt");
       const hash = await crypto.subtle.digest('SHA-256', buf);
       return new Uint8Array(hash).slice(0, 16);
     }
 
-    // AES-256-CBC 復号処理
     async function decryptData(encHex, ivBytes, pass) {
       const passBuffer = new TextEncoder().encode(pass);
       const keyHash = await crypto.subtle.digest('SHA-256', passBuffer);
@@ -240,11 +237,9 @@
       errorMsg.classList.add('hidden');
 
       try {
-        // [Step 1] Gist IV 生成
         console.log("[Step 1] Generating Gist IV...");
         const gistIvBytes = await deriveGistIv(pass);
 
-        // [Step 2] Gist URL 復号
         console.log("[Step 2] Decrypting Gist URL...");
         let gistUrl = "";
         try {
@@ -254,7 +249,6 @@
           throw new Error(`[Step 2 Failed] Gist URL decryption error: ${err.message}`);
         }
 
-        // [Step 3] Gist データ取得
         console.log("[Step 3] Fetching Gist JSON...");
         let res;
         try {
@@ -270,7 +264,6 @@
           document.getElementById('update-time').innerText = "更新: " + updatedAt + " (JST)";
         }
 
-        // [Step 4] トンネルURL 復号
         console.log("[Step 4] Decrypting Tunnel URL...");
         let realUrl = "";
         try {
@@ -280,7 +273,6 @@
           throw new Error(`[Step 4 Failed] Tunnel URL decryption error: ${err.message}`);
         }
 
-        // 疎通確認
         console.log("[Step 5] Checking server connectivity...");
         const imgTester = new Image();
         let isHandled = false;
