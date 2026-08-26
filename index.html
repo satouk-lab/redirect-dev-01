@@ -29,7 +29,7 @@
     
     <div id="status-container">
       <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
-      <div class="timestamp">更新: 2026/08/26 12:55:26 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 13:07:21 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -44,16 +44,16 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://everywhere-journal-managed-manga.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://everywhere-journal-managed-manga.trycloudflare.com" target="_blank" rel="noopener">https://everywhere-journal-managed-manga.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://checklist-bullet-officer-myspace.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://checklist-bullet-officer-myspace.trycloudflare.com" target="_blank" rel="noopener">https://checklist-bullet-officer-myspace.trycloudflare.com</a>
     </div>
   </div>
 
   <script>
-    const APP_VERSION = "v1.0.5 (2026/08/26 12:55:26)";
+    const APP_VERSION = "v1.0.6 (2026/08/26 13:07:21)";
     console.log("System Version:", APP_VERSION);
 
-    const targetUrl = "https://everywhere-journal-managed-manga.trycloudflare.com";
+    const targetUrl = "https://checklist-bullet-officer-myspace.trycloudflare.com";
 
     function setStatus(isOnline, reason) {
       const badge = document.getElementById('status-badge');
@@ -76,28 +76,18 @@
       try {
         const res = await fetch(targetUrl + "/?_=" + Date.now(), { method: 'GET', signal: controller.signal });
         clearTimeout(timeoutId);
+        
+        // Python側でCORSが許可されていれば、コンテナONの時のみ res.ok (200 OK) に到達可能
         if (res.ok) {
-          setStatus(true, "HTTP 200 OK");
+          setStatus(true, "HTTP " + res.status + " OK");
         } else {
-          setStatus(false, "HTTP Status: " + res.status);
+          // 502 Bad Gateway やその他のエラー応答
+          setStatus(false, "HTTP " + res.status + " Error");
         }
       } catch (err) {
         clearTimeout(timeoutId);
-        if (err.name === 'AbortError') {
-          setStatus(false, "Timeout");
-          return;
-        }
-
-        const errStr = String(err) + " " + (err.message || "");
-        console.log("Probe Catch Details:", errStr);
-
-        // 502 Bad Gateway やサーバー異常レスポンスがログに混ざっている場合は明確に OFFLINE
-        if (errStr.includes("502") || errStr.includes("Bad Gateway") || errStr.includes("500") || errStr.includes("503")) {
-          setStatus(false, "502 Bad Gateway (Container Stopped)");
-        } else {
-          // コンテナ起動時（正常動作時）はCORS制限で Failed to fetch になるため ONLINE と判定
-          setStatus(true, "Container Running (CORS restricted)");
-        }
+        // CORSで弾かれた場合、ネットワークエラー、タイムアウトはすべてOFFLINEと判定
+        setStatus(false, err.name === 'AbortError' ? "Timeout" : "Connection Failed / CORS Blocked");
       }
     }
 
