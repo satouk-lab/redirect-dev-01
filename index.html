@@ -29,7 +29,7 @@
     
     <div id="status-container">
       <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
-      <div class="timestamp">更新: 2026/08/26 10:51:34 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 10:55:41 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -44,13 +44,16 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://depot-gained-solar-earn.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://depot-gained-solar-earn.trycloudflare.com" target="_blank" rel="noopener">https://depot-gained-solar-earn.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://cow-penetration-arch-foster.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://cow-penetration-arch-foster.trycloudflare.com" target="_blank" rel="noopener">https://cow-penetration-arch-foster.trycloudflare.com</a>
     </div>
   </div>
 
   <script>
-    const targetUrl = "https://depot-gained-solar-earn.trycloudflare.com";
+    const APP_VERSION = "v1.0.0 (2026/08/26 10:55:41)";
+    console.log("System Version:", APP_VERSION);
+
+    const targetUrl = "https://cow-penetration-arch-foster.trycloudflare.com";
 
     function setStatus(isOnline, reason) {
       const badge = document.getElementById('status-badge');
