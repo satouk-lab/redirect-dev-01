@@ -20,8 +20,6 @@
 <body>
   <div class="card">
     <h2>Portal</h2>
-    
-    <!-- パスワード入力エリア -->
     <div id="login-form">
       <p>Passcode</p>
       <input type="password" id="pass-input" placeholder="****">
@@ -30,11 +28,10 @@
       <p id="error-msg" class="error hidden">認証エラー</p>
     </div>
 
-    <!-- 認証完了後に表示されるコンテンツ -->
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://bernard-bit-locks-own.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://bernard-bit-locks-own.trycloudflare.com" target="_blank" rel="noopener">https://bernard-bit-locks-own.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://faster-dublin-hypothesis-groups.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://faster-dublin-hypothesis-groups.trycloudflare.com" target="_blank" rel="noopener">https://faster-dublin-hypothesis-groups.trycloudflare.com</a>
     </div>
   </div>
 
@@ -42,13 +39,11 @@
     async function checkPass() {
       const pass = document.getElementById('pass-input').value;
       
-      // 入力値をブラウザ側でSHA-256ハッシュ化
       const msgBuffer = new TextEncoder().encode(pass);
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       
-      // env.phpから生成されたハッシュ値と照合
       if (hashHex === "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4") {
         document.getElementById('login-form').classList.add('hidden');
         document.getElementById('content').classList.remove('hidden');
