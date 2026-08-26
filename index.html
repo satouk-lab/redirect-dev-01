@@ -15,22 +15,13 @@
     a { color: #4daafc; word-break: break-all; text-decoration: none; display: inline-block; margin-top: 15px; font-size: 14px; font-weight: bold; }
     a:hover { text-decoration: underline; }
     .error { color: #ff6b6b; font-size: 14px; margin-top: 8px; }
-    
-    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
-    .status-standby { background: #6c757d; color: #fff; }
-    .status-online { background: #28a745; color: #fff; }
-    .status-offline { background: #dc3545; color: #fff; }
     .timestamp { font-size: 11px; color: #888; margin-top: 4px; }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>Dev Lab</h2>
-    
-    <div id="status-container">
-      <span id="status-badge" class="status-badge status-standby">● STANDBY</span>
-      <div class="timestamp">更新: 2026/08/26 13:34:19 (JST)</div>
-    </div>
+    <div class="timestamp">更新: 2026/08/26 13:38:40 (JST)</div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
 
@@ -50,14 +41,8 @@
   </div>
 
   <script>
-    const APP_VERSION = "v1.1.0 (2026/08/26 13:34:19)";
+    const APP_VERSION = "v1.2.0 (2026/08/26 13:38:40)";
     console.log("System Version:", APP_VERSION);
-
-    function setStatus(statusType, labelText) {
-      const badge = document.getElementById('status-badge');
-      badge.innerText = labelText;
-      badge.className = "status-badge status-" + statusType;
-    }
 
     async function checkPass() {
       const pass = document.getElementById('pass-input').value;
@@ -68,47 +53,23 @@
       
       // パスワード判定
       if (hashHex === "8a14e32798ebe8ccc0c459824604e2883e1e26a8460a3834aefaf42fbe44ff72") {
-        // 分割した文字列から動的にURLを復元（HTMLソース検索で「https://...trycloudflare.com」に引っかからないようにする）
+        // 動的にURLを生成（ソースコード検索での完全URL検索を防止）
         const scheme = "https://";
-        const sub = "tackle-statewide-cam-here";
+        const sub = "sean-specification-reel-sufficiently";
         const domain = ".trycloudflare.com";
         const realUrl = scheme + sub + domain;
         
-        // パスワード正解後にのみヘルスチェック（疎通確認）を叩く
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-        try {
-          const res = await fetch(realUrl + "/api/status?_=" + Date.now(), { method: 'GET', signal: controller.signal });
-          clearTimeout(timeoutId);
-          
-          if (res.ok) {
-            // 接続成功 -> ONLINE 表示 & QR・リンク表示
-            setStatus("online", "● ONLINE");
-            document.getElementById('login-form').classList.add('hidden');
-            
-            document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(realUrl);
-            const linkElem = document.getElementById('access-link');
-            linkElem.href = realUrl;
-            linkElem.innerText = realUrl;
-            
-            document.getElementById('content').classList.remove('hidden');
-            document.getElementById('error-msg').classList.add('hidden');
-          } else {
-            // 応答エラー -> OFFLINE
-            setStatus("offline", "● OFFLINE");
-            document.getElementById('error-msg').innerText = "サーバー接続不可 (HTTP " + res.status + ")";
-            document.getElementById('error-msg').classList.remove('hidden');
-          }
-        } catch (err) {
-          clearTimeout(timeoutId);
-          // 接続失敗 -> OFFLINE
-          setStatus("offline", "● OFFLINE");
-          document.getElementById('error-msg').innerText = "サーバーが停止中またはオフラインです";
-          document.getElementById('error-msg').classList.remove('hidden');
-        }
+        // fetchによる疎通確認を排除（コンソールエラーログの露出防止）
+        document.getElementById('login-form').classList.add('hidden');
+        
+        document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(realUrl);
+        const linkElem = document.getElementById('access-link');
+        linkElem.href = realUrl;
+        linkElem.innerText = realUrl;
+        
+        document.getElementById('content').classList.remove('hidden');
+        document.getElementById('error-msg').classList.add('hidden');
       } else {
-        // パスワード不一致
         document.getElementById('error-msg').innerText = "認証エラー";
         document.getElementById('error-msg').classList.remove('hidden');
       }
