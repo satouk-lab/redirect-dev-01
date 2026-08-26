@@ -8,9 +8,12 @@
   <style>
     body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #121212; color: #fff; }
     .card { text-align: center; padding: 2rem; background: #1e1e1e; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 340px; width: 90%; }
-    input { padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #444; background: #2d2d2d; color: #fff; width: 80%; margin-bottom: 12px; text-align: center; }
-    button { padding: 10px 20px; font-size: 16px; border-radius: 6px; border: none; background: #007acc; color: #fff; cursor: pointer; }
-    button:hover { background: #005999; }
+    .input-group { position: relative; display: flex; align-items: center; justify-content: center; width: 80%; margin: 0 auto 12px auto; }
+    input { padding: 10px 40px 10px 10px; font-size: 16px; border-radius: 6px; border: 1px solid #444; background: #2d2d2d; color: #fff; width: 100%; text-align: center; box-sizing: border-box; }
+    .toggle-btn { position: absolute; right: 8px; background: none; border: none; color: #888; cursor: pointer; font-size: 18px; padding: 4px 8px; }
+    .toggle-btn:hover { color: #fff; background: none; }
+    button#btn-enter { padding: 10px 20px; font-size: 16px; border-radius: 6px; border: none; background: #007acc; color: #fff; cursor: pointer; }
+    button#btn-enter:hover { background: #005999; }
     .hidden { display: none; }
     img { border: 8px solid #fff; border-radius: 8px; margin-top: 15px; }
     a { color: #4daafc; word-break: break-all; text-decoration: none; display: inline-block; margin-top: 15px; font-size: 14px; font-weight: bold; }
@@ -28,15 +31,17 @@
     <h2>In Dev Lab</h2>
     <div id="status-container">
       <span id="status-badge" class="status-badge status-standby">● STANDBY</span>
-      <div class="timestamp">更新: 2026/08/26 15:28:31 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 15:30:52 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
 
     <div id="login-form">
       <p>Passcode</p>
-      <input type="password" id="pass-input" placeholder="****">
-      <br>
+      <div class="input-group">
+        <input type="password" id="pass-input" placeholder="****">
+        <button type="button" id="btn-toggle-pass" class="toggle-btn" onclick="togglePassword()">👁️</button>
+      </div>
       <button id="btn-enter" onclick="checkPass()">Enter</button>
       <p id="error-msg" class="error hidden">認証エラー</p>
     </div>
@@ -49,11 +54,24 @@
   </div>
 
   <script>
-    const APP_VERSION = "v1.8.0 Full-Encrypted Mode (2026/08/26 15:28:31)";
+    const APP_VERSION = "v1.8.0 Full-Encrypted Mode (2026/08/26 15:30:52)";
     console.log("System Version:", APP_VERSION);
 
-    const ENC_DATA = "38145bcdefdc2e7194ada0f1cf419981d9b151c5f0187430e9f08f61676ddd0c9e3f2b97c4c3c851b374655b92f38bea3750bef5a71a93bec9ab976e41fd94bd";
-    const ENC_IV = "f69e84e22a4e7018a95ded4a9bb36848";
+    const ENC_DATA = "57db5b01bedd1c1b967cc7a97caf355324afe7d7cea36db8f6055b00cd6a62fd0a77d0e118a6ebcd6310f0ec00d143f036fd9988bb9e8c99e5cd51032248cc54";
+    const ENC_IV = "e37cce237f3c89cafa0a282b3fee7893";
+
+    function togglePassword() {
+      const passInput = document.getElementById('pass-input');
+      const toggleBtn = document.getElementById('btn-toggle-pass');
+
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+        toggleBtn.innerText = '🙈';
+      } else {
+        passInput.type = 'password';
+        toggleBtn.innerText = '👁️';
+      }
+    }
 
     function setStatus(statusType, labelText) {
       const badge = document.getElementById('status-badge');
