@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal</title>
+  <title>In Dev Lab</title>
   <style>
     body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #121212; color: #fff; }
     .card { text-align: center; padding: 2rem; background: #1e1e1e; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 320px; width: 90%; }
@@ -19,7 +19,7 @@
 </head>
 <body>
   <div class="card">
-    <h2>Portal</h2>
+    <h2>Dev Lab</h2>
     <div id="login-form">
       <p>Passcode</p>
       <input type="password" id="pass-input" placeholder="****">
@@ -30,8 +30,8 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://faster-dublin-hypothesis-groups.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://faster-dublin-hypothesis-groups.trycloudflare.com" target="_blank" rel="noopener">https://faster-dublin-hypothesis-groups.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://stream-race-purchase-victoria.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://stream-race-purchase-victoria.trycloudflare.com" target="_blank" rel="noopener">https://stream-race-purchase-victoria.trycloudflare.com</a>
     </div>
   </div>
 
@@ -44,7 +44,7 @@
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       
-      if (hashHex === "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4") {
+      if (hashHex === "8a14e32798ebe8ccc0c459824604e2883e1e26a8460a3834aefaf42fbe44ff72") {
         document.getElementById('login-form').classList.add('hidden');
         document.getElementById('content').classList.remove('hidden');
       } else {
