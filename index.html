@@ -10,16 +10,25 @@
     input { padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #444; background: #2d2d2d; color: #fff; width: 80%; margin-bottom: 12px; text-align: center; }
     button { padding: 10px 20px; font-size: 16px; border-radius: 6px; border: none; background: #007acc; color: #fff; cursor: pointer; }
     button:hover { background: #005999; }
-    .error { color: #ff6b6b; font-size: 14px; margin-top: 8px; display: none; }
-    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 8px; background: #6c757d; color: #fff; }
+    .hidden { display: none; }
+    img { border: 8px solid #fff; border-radius: 8px; margin-top: 15px; }
+    a { color: #4daafc; word-break: break-all; text-decoration: none; display: inline-block; margin-top: 15px; font-size: 14px; font-weight: bold; }
+    a:hover { text-decoration: underline; }
+    .error { color: #ff6b6b; font-size: 14px; margin-top: 8px; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
+    .status-standby { background: #6c757d; color: #fff; }
+    .status-online { background: #28a745; color: #fff; }
+    .status-offline { background: #dc3545; color: #fff; }
     .timestamp { font-size: 11px; color: #888; margin-top: 4px; }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>Dev Lab</h2>
-    <span class="status-badge">● STANDBY</span>
-    <div class="timestamp">更新: 2026/08/26 13:42:34 (JST)</div>
+    <div id="status-container">
+      <span id="status-badge" class="status-badge status-standby">● STANDBY</span>
+      <div class="timestamp">更新: 2026/08/26 13:48:18 (JST)</div>
+    </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
 
@@ -27,32 +36,101 @@
       <p>Passcode</p>
       <input type="password" id="pass-input" placeholder="****">
       <br>
-      <button onclick="checkPass()">Enter</button>
-      <p id="error-msg" class="error">認証エラー</p>
+      <button id="btn-enter" onclick="checkPass()">Enter</button>
+      <p id="error-msg" class="error hidden">認証エラー</p>
+    </div>
+
+    <div id="content" class="hidden">
+      <p>Access Link</p>
+      <img id="qr-img" src="" alt="QR Code"><br>
+      <a id="access-link" href="#" target="_blank" rel="noopener"></a>
     </div>
   </div>
 
   <script>
-    const APP_VERSION = "v1.3.0 (2026/08/26 13:42:34)";
+    const APP_VERSION = "v1.4.0 (2026/08/26 13:48:18)";
     console.log("System Version:", APP_VERSION);
 
+    function setStatus(statusType, labelText) {
+      const badge = document.getElementById('status-badge');
+      badge.innerText = labelText;
+      badge.className = "status-badge status-" + statusType;
+    }
+
     async function checkPass() {
+      const btn = document.getElementById('btn-enter');
       const pass = document.getElementById('pass-input').value;
+      const errorMsg = document.getElementById('error-msg');
+
       const msgBuffer = new TextEncoder().encode(pass);
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       
       if (hashHex === "8a14e32798ebe8ccc0c459824604e2883e1e26a8460a3834aefaf42fbe44ff72") {
-        const scheme = "https://";
-        const sub = "bug-macintosh-cabin-uncle";
-        const domain = ".trycloudflare.com";
+        btn.disabled = true;
+        errorMsg.classList.add('hidden');
         
-        // 認証成功時は直接ページ遷移（コンソールエラー非表示＆疎通試行をブラウザに委任）
-        window.location.href = scheme + sub + domain;
+        // URL動的生成
+        const scheme = "https://";
+        const sub = "span-holes-description-mechanics";
+        const domain = ".trycloudflare.com";
+        const realUrl = scheme + sub + domain;
+
+        // Image判定で赤ログを出さずに疎通チェック
+        const imgTester = new Image();
+        let isHandled = false;
+
+        const timer = setTimeout(() => {
+          if (!isHandled) {
+            isHandled = true;
+            btn.disabled = false;
+            setStatus("offline", "● OFFLINE");
+            errorMsg.innerText = "サーバーが停止中またはオフラインです";
+            errorMsg.classList.remove('hidden');
+          }
+        }, 3000);
+
+        // 疎通確認成功（レスポンスあり）
+        const handleSuccess = () => {
+          if (isHandled) return;
+          isHandled = true;
+          clearTimeout(timer);
+          btn.disabled = false;
+
+          setStatus("online", "● ONLINE");
+          document.getElementById('login-form').classList.add('hidden');
+
+          document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(realUrl);
+          const linkElem = document.getElementById('access-link');
+          linkElem.href = realUrl;
+          linkElem.innerText = realUrl;
+
+          document.getElementById('content').classList.remove('hidden');
+        };
+
+        // 疎通確認失敗
+        const handleError = () => {
+          if (isHandled) return;
+          isHandled = true;
+          clearTimeout(timer);
+          btn.disabled = false;
+
+          setStatus("offline", "● OFFLINE");
+          errorMsg.innerText = "サーバーが停止中またはオフラインです";
+          errorMsg.classList.remove('hidden');
+        };
+
+        // 画像取得イベントフック（フェッチエラーの代わりにImageの読込成功/失敗を利用）
+        imgTester.onload = handleSuccess;
+        imgTester.onerror = handleError;
+        
+        // パラメータ付与してキャッシュ回避実行
+        imgTester.src = realUrl + "/favicon.ico?_=" + Date.now();
+
       } else {
-        const errElem = document.getElementById('error-msg');
-        errElem.style.display = "block";
+        errorMsg.innerText = "認証エラー";
+        errorMsg.classList.remove('hidden');
       }
     }
   </script>
