@@ -105,8 +105,9 @@
 
     .error {
       color: #ff6b6b;
-      font-size: 14px;
+      font-size: 13px;
       margin-top: 8px;
+      word-break: break-all;
     }
 
     .status-badge {
@@ -158,7 +159,7 @@
         <button type="button" id="btn-toggle-pass" class="toggle-btn" onclick="togglePassword()">👁️</button>
       </div>
       <button id="btn-enter" onclick="checkPass()">Enter</button>
-      <p id="error-msg" class="error hidden">認証エラー</p>
+      <p id="error-msg" class="error hidden"></p>
     </div>
 
     <div id="content" class="hidden">
@@ -169,10 +170,10 @@
   </div>
 
   <script>
-    const APP_VERSION = "v3.2.0 Single Variable Mode";
+    const APP_VERSION = "v3.2.1 Debug Mode";
     console.log("System Version:", APP_VERSION);
 
-    // ★ この暗号化された文字列だけを保持（IV変数は排除）
+    // ★ この暗号化された文字列だけを保持
     const ENC_GIST_URL = "【ここに暗号化されたGistのURLが入る】";
 
     function togglePassword() {
@@ -194,6 +195,9 @@
     }
 
     function hexToBytes(hex) {
+      if (!hex || hex.length % 2 !== 0) {
+        throw new Error(`Invalid Hex String (Length: ${hex ? hex.length : 0})`);
+      }
       const bytes = new Uint8Array(hex.length / 2);
       for (let i = 0; i < bytes.length; i++) {
         bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
@@ -216,10 +220,11 @@
         'raw', keyHash, { name: 'AES-CBC' }, false, ['decrypt']
       );
 
+      const cipherBytes = hexToBytes(encHex);
       const decryptedBuffer = await crypto.subtle.decrypt(
         { name: 'AES-CBC', iv: ivBytes },
         cryptoKey,
-        hexToBytes(encHex)
+        cipherBytes
       );
 
       return new TextDecoder().decode(decryptedBuffer);
@@ -235,25 +240,48 @@
       errorMsg.classList.add('hidden');
 
       try {
-        // ステップ1: パスワードからIVを動的に派生生成
+        // [Step 1] Gist IV 生成
+        console.log("[Step 1] Generating Gist IV...");
         const gistIvBytes = await deriveGistIv(pass);
 
-        // ステップ2: 生成したIVで Gist URL を復号
-        const gistUrl = await decryptData(ENC_GIST_URL, gistIvBytes, pass);
+        // [Step 2] Gist URL 復号
+        console.log("[Step 2] Decrypting Gist URL...");
+        let gistUrl = "";
+        try {
+          gistUrl = await decryptData(ENC_GIST_URL, gistIvBytes, pass);
+          console.log("[Step 2 Success] Decrypted Gist URL:", gistUrl);
+        } catch (err) {
+          throw new Error(`[Step 2 Failed] Gist URL decryption error: ${err.message}`);
+        }
 
-        // ステップ3: Gist から JSON 取得
-        const res = await fetch(gistUrl + "?_=" + Date.now());
-        if (!res.ok) throw new Error("Gist fetch failed");
+        // [Step 3] Gist データ取得
+        console.log("[Step 3] Fetching Gist JSON...");
+        let res;
+        try {
+          res = await fetch(gistUrl + "?_=" + Date.now());
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        } catch (err) {
+          throw new Error(`[Step 3 Failed] Gist Fetch error: ${err.message}`);
+        }
+
         const { ENC_DATA, ENC_IV, updatedAt } = await res.json();
 
         if (updatedAt) {
           document.getElementById('update-time').innerText = "更新: " + updatedAt + " (JST)";
         }
 
-        // ステップ4: Gist 内の動的IVでトンネルURLを復号
-        const realUrl = await decryptData(ENC_DATA, hexToBytes(ENC_IV), pass);
+        // [Step 4] トンネルURL 復号
+        console.log("[Step 4] Decrypting Tunnel URL...");
+        let realUrl = "";
+        try {
+          realUrl = await decryptData(ENC_DATA, hexToBytes(ENC_IV), pass);
+          console.log("[Step 4 Success] Tunnel URL:", realUrl);
+        } catch (err) {
+          throw new Error(`[Step 4 Failed] Tunnel URL decryption error: ${err.message}`);
+        }
 
-        // 疎通確認と表示処理
+        // 疎通確認
+        console.log("[Step 5] Checking server connectivity...");
         const imgTester = new Image();
         let isHandled = false;
 
@@ -262,7 +290,7 @@
             isHandled = true;
             btn.disabled = false;
             setStatus("offline", "● OFFLINE");
-            errorMsg.innerText = "サーバーが停止中またはオフラインです";
+            errorMsg.innerText = "エラー: サーバーが応答しません";
             errorMsg.classList.remove('hidden');
           }
         }, 3000);
@@ -290,16 +318,16 @@
           btn.disabled = false;
 
           setStatus("offline", "● OFFLINE");
-          errorMsg.innerText = "サーバーが停止中またはオフラインです";
+          errorMsg.innerText = "エラー: サーバーにアクセスできませんでした";
           errorMsg.classList.remove('hidden');
         };
 
         imgTester.src = realUrl + "/static/favicon.ico?_=" + Date.now();
 
       } catch (e) {
-        console.error("DEBUG ERROR:", e);
+        console.error("DETAILED ERROR:", e);
         btn.disabled = false;
-        errorMsg.innerText = "認証エラー";
+        errorMsg.innerText = e.message;
         errorMsg.classList.remove('hidden');
       }
     }
