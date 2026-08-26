@@ -30,7 +30,7 @@
     
     <div id="status-container">
       <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
-      <div class="timestamp">更新: 2026/08/26 10:43:07 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 10:48:22 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -45,51 +45,94 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://identifying-ext-criticism-buzz.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://identifying-ext-criticism-buzz.trycloudflare.com" target="_blank" rel="noopener">https://identifying-ext-criticism-buzz.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://reed-proven-proven-dairy.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://reed-proven-proven-dairy.trycloudflare.com" target="_blank" rel="noopener">https://reed-proven-proven-dairy.trycloudflare.com</a>
     </div>
   </div>
 
   <script>
-    const targetUrl = "https://identifying-ext-criticism-buzz.trycloudflare.com";
+    const targetUrl = "https://reed-proven-proven-dairy.trycloudflare.com";
+    let isSettled = false;
 
-    // Image読み込みを利用してCORS制限を回避した生きてるかチェック
-    function checkServerStatus() {
+    function setStatus(isOnline, source) {
+      if (isSettled) {
+        console.log([Status Check] 決定済みのためスキップ ());
+        return;
+      }
+      isSettled = true;
       const badge = document.getElementById('status-badge');
-      const img = new Image();
-      let isSettled = false;
-
-      // 4秒タイムアウト
-      const timer = setTimeout(() => {
-        if (!isSettled) {
-          isSettled = true;
-          badge.innerText = "● OFFLINE";
-          badge.className = "status-badge status-offline";
-        }
-      }, 4000);
-
-      // HTML/200番台が返ってきたらImage読み込みはエラー（onloadではなくonerror）になるが、
-      // 502 Bad Gateway等の時とは違い接続成功として検知できる
-      img.onload = img.onerror = function() {
-        if (!isSettled) {
-          isSettled = true;
-          clearTimeout(timer);
-          
-          // ネットワーク接続自体は成功しているため ONLINE に設定
-          badge.innerText = "● ONLINE";
-          badge.className = "status-badge status-online";
-        }
-      };
-
-      // キャッシュ無効化のためのタイムスタンプを付与してリクエスト
-      img.src = targetUrl + "/favicon.ico?_=" + new Date().getTime();
+      if (isOnline) {
+        console.log([Status Check] 🚀 ONLINE 確定 (判定源: ));
+        badge.innerText = "● ONLINE";
+        badge.className = "status-badge status-online";
+      } else {
+        console.warn([Status Check] ❌ OFFLINE 確定 (判定源: ));
+        badge.innerText = "● OFFLINE";
+        badge.className = "status-badge status-offline";
+      }
     }
 
-    checkServerStatus();
+    // --- チェック1: Fetch Probe (no-cors) ---
+    async function probeFetch() {
+      console.log("[Status Check] Fetch テスト開始...");
+      const controller = new AbortController();
+      const timeout = setTimeout(() => {
+        controller.abort();
+        console.warn("[Status Check] Fetch タイムアウト");
+      }, 3500);
+
+      try {
+        await fetch(targetUrl + "/?_=" + Date.now(), { method: 'GET', mode: 'no-cors', signal: controller.signal });
+        clearTimeout(timeout);
+        console.log("[Status Check] Fetch 応答あり (ネットワーク到達成功)");
+        setStatus(true, "Fetch API");
+      } catch (err) {
+        clearTimeout(timeout);
+        console.error("[Status Check] Fetch エラー:", err.message);
+        if (err.name === 'AbortError') {
+          setStatus(false, "Fetch Timeout");
+        }
+      }
+    }
+
+    // --- チェック2: Image Ping (Favicon / 応答テスト) ---
+    function probeImage() {
+      console.log("[Status Check] Image Ping 開始...");
+      const img = new Image();
+      const timeout = setTimeout(() => {
+        console.warn("[Status Check] Image Ping タイムアウト");
+        setStatus(false, "Image Timeout");
+      }, 3500);
+
+      img.onload = () => {
+        clearTimeout(timeout);
+        console.log("[Status Check] Image 読み込み成功");
+        setStatus(true, "Image OnLoad");
+      };
+
+      img.onerror = () => {
+        clearTimeout(timeout);
+        console.log("[Status Check] Image エラー検知 (サーバーから応答受信)");
+        setStatus(true, "Image OnError");
+      };
+
+      img.src = targetUrl + "/favicon.ico?_=" + Date.now();
+    }
+
+    // --- チェック3: 最終セーフティネットタイムアウト (4秒) ---
+    setTimeout(() => {
+      if (!isSettled) {
+        console.warn("[Status Check] 最終セーフティタイムアウト発動");
+        setStatus(false, "Safety Timeout");
+      }
+    }, 4000);
+
+    // 並行実行（一番早いレスポンスを採用）
+    probeFetch();
+    probeImage();
 
     async function checkPass() {
       const pass = document.getElementById('pass-input').value;
-      
       const msgBuffer = new TextEncoder().encode(pass);
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
