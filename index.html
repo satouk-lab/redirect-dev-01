@@ -1,39 +1,154 @@
 ﻿<!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow, noarchive">
   <title>In Dev Lab</title>
   <style>
-    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #121212; color: #fff; }
-    .card { text-align: center; padding: 2rem; background: #1e1e1e; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 340px; width: 90%; }
-    .input-group { position: relative; display: flex; align-items: center; justify-content: center; width: 80%; margin: 0 auto 12px auto; }
-    input { padding: 10px 40px 10px 10px; font-size: 16px; border-radius: 6px; border: 1px solid #444; background: #2d2d2d; color: #fff; width: 100%; text-align: center; box-sizing: border-box; }
-    .toggle-btn { position: absolute; right: 8px; background: none; border: none; color: #888; cursor: pointer; font-size: 18px; padding: 4px 8px; }
-    .toggle-btn:hover { color: #fff; background: none; }
-    button#btn-enter { padding: 10px 20px; font-size: 16px; border-radius: 6px; border: none; background: #007acc; color: #fff; cursor: pointer; }
-    button#btn-enter:hover { background: #005999; }
-    .hidden { display: none; }
-    img { border: 8px solid #fff; border-radius: 8px; margin-top: 15px; }
-    a { color: #4daafc; word-break: break-all; text-decoration: none; display: inline-block; margin-top: 15px; font-size: 14px; font-weight: bold; }
-    a:hover { text-decoration: underline; }
-    .error { color: #ff6b6b; font-size: 14px; margin-top: 8px; }
-    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
-    .status-standby { background: #6c757d; color: #fff; }
-    .status-online { background: #28a745; color: #fff; }
-    .status-offline { background: #dc3545; color: #fff; }
-    .timestamp { font-size: 11px; color: #888; margin-top: 4px; }
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #121212;
+      color: #fff;
+    }
+
+    .card {
+      text-align: center;
+      padding: 2rem;
+      background: #1e1e1e;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      max-width: 340px;
+      width: 90%;
+    }
+
+    .input-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 80%;
+      margin: 0 auto 12px auto;
+    }
+
+    input {
+      padding: 10px 40px 10px 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: #2d2d2d;
+      color: #fff;
+      width: 100%;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .toggle-btn {
+      position: absolute;
+      right: 8px;
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 8px;
+    }
+
+    .toggle-btn:hover {
+      color: #fff;
+      background: none;
+    }
+
+    button#btn-enter {
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      background: #007acc;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button#btn-enter:hover {
+      background: #005999;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    img {
+      border: 8px solid #fff;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+
+    a {
+      color: #4daafc;
+      word-break: break-all;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 15px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .error {
+      color: #ff6b6b;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .status-standby {
+      background: #6c757d;
+      color: #fff;
+    }
+
+    .status-online {
+      background: #28a745;
+      color: #fff;
+    }
+
+    .status-offline {
+      background: #dc3545;
+      color: #fff;
+    }
+
+    .timestamp {
+      font-size: 11px;
+      color: #888;
+      margin-top: 4px;
+    }
   </style>
 </head>
+
 <body>
   <div class="card">
     <h2>In Dev Lab</h2>
     <div id="status-container">
       <span id="status-badge" class="status-badge status-standby">● STANDBY</span>
-      <div class="timestamp">更新: 2026/08/26 15:30:52 (JST)</div>
+      <div id="update-time" class="timestamp">更新日時を取得中...</div>
     </div>
-    
+
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
 
     <div id="login-form">
@@ -54,16 +169,14 @@
   </div>
 
   <script>
-    const APP_VERSION = "v1.8.0 Full-Encrypted Mode (2026/08/26 15:30:52)";
+    const APP_VERSION = "v2.0.0 Gist-Encrypted Mode";
     console.log("System Version:", APP_VERSION);
 
-    const ENC_DATA = "57db5b01bedd1c1b967cc7a97caf355324afe7d7cea36db8f6055b00cd6a62fd0a77d0e118a6ebcd6310f0ec00d143f036fd9988bb9e8c99e5cd51032248cc54";
-    const ENC_IV = "e37cce237f3c89cafa0a282b3fee7893";
+    const GIST_RAW_URL = "https://gist.githubusercontent.com/raw/1ce416433a636498c96f3a998bc44209/tunnel.json";
 
     function togglePassword() {
       const passInput = document.getElementById('pass-input');
       const toggleBtn = document.getElementById('btn-toggle-pass');
-
       if (passInput.type === 'password') {
         passInput.type = 'text';
         toggleBtn.innerText = '🙈';
@@ -93,20 +206,22 @@
       const errorMsg = document.getElementById('error-msg');
 
       if (!pass) return;
-
       btn.disabled = true;
       errorMsg.classList.add('hidden');
 
       try {
+        const res = await fetch(GIST_RAW_URL + "?_=" + Date.now());
+        if (!res.ok) throw new Error("Gist fetch failed");
+        const { ENC_DATA, ENC_IV, updatedAt } = await res.json();
+
+        if (updatedAt) {
+          document.getElementById('update-time').innerText = "更新: " + updatedAt + " (JST)";
+        }
+
         const passBuffer = new TextEncoder().encode(pass);
         const keyHash = await crypto.subtle.digest('SHA-256', passBuffer);
-        
         const cryptoKey = await crypto.subtle.importKey(
-          'raw',
-          keyHash,
-          { name: 'AES-CBC' },
-          false,
-          ['decrypt']
+          'raw', keyHash, { name: 'AES-CBC' }, false, ['decrypt']
         );
 
         const decryptedBuffer = await crypto.subtle.decrypt(
@@ -143,7 +258,6 @@
           const linkElem = document.getElementById('access-link');
           linkElem.href = realUrl;
           linkElem.innerText = realUrl;
-
           document.getElementById('content').classList.remove('hidden');
         };
 
@@ -168,4 +282,5 @@
     }
   </script>
 </body>
+
 </html>
