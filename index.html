@@ -25,11 +25,11 @@
 </head>
 <body>
   <div class="card">
-    <h2>Dev Lab</h2>
+    2Dev Lab</h2>
     
     <div id="status-container">
       <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
-      <div class="timestamp">更新: 2026/08/26 12:43:20 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 12:46:38 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -44,16 +44,16 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://helped-port-relatives-second.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://helped-port-relatives-second.trycloudflare.com" target="_blank" rel="noopener">https://helped-port-relatives-second.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://villas-log-searches-taste.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://villas-log-searches-taste.trycloudflare.com" target="_blank" rel="noopener">https://villas-log-searches-taste.trycloudflare.com</a>
     </div>
   </div>
 
   <script>
-    const APP_VERSION = "v1.0.2 (2026/08/26 12:43:20)";
+    const APP_VERSION = "v1.0.3 (2026/08/26 12:46:38)";
     console.log("System Version:", APP_VERSION);
 
-    const targetUrl = "https://helped-port-relatives-second.trycloudflare.com";
+    const targetUrl = "https://villas-log-searches-taste.trycloudflare.com";
 
     function setStatus(isOnline, reason) {
       const badge = document.getElementById('status-badge');
@@ -71,33 +71,52 @@
     function checkServerStatus() {
       console.log("Status Check: Starting probe...");
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      let finished = false;
+      const img = new Image();
 
-      fetch(targetUrl + "/?_=" + Date.now(), { method: 'GET', signal: controller.signal })
-        .then(res => {
+      // 3.5秒タイムアウト処理
+      const timeoutId = setTimeout(() => {
+        if (!finished) {
+          finished = true;
+          setStatus(false, "Probe Timeout");
+        }
+      }, 3500);
+
+      // サーバーが生きていて画像等のリソース応答を返した場合は onload/onerror の挙動で検知
+      // 502 Bad Gateway(HTMLページ)が返った場合は画像としてパースできず onerror が発火
+      img.onload = () => {
+        if (!finished) {
+          finished = true;
           clearTimeout(timeoutId);
-          if (res.ok) {
-            setStatus(true, "Fetch 200 OK");
-          } else {
-            setStatus(false, "HTTP Status: " + res.status);
-          }
-        })
-        .catch(err => {
-          if (err.name === 'AbortError') {
-            setStatus(false, "Timeout");
-            return;
-          }
-          fetch(targetUrl + "/?_=" + Date.now(), { method: 'GET', mode: 'no-cors', signal: controller.signal })
-            .then(res => {
-              clearTimeout(timeoutId);
-              setStatus(true, "Server Alive (no-cors response)");
-            })
-            .catch(err2 => {
-              clearTimeout(timeoutId);
-              setStatus(false, "Server Offline / Network Error");
-            });
-        });
+          setStatus(true, "Favicon loaded");
+        }
+      };
+
+      img.onerror = () => {
+        if (finished) return;
+        
+        // 通常の fetch でステータスコードを精密判定
+        fetch(targetUrl + "/?_=" + Date.now())
+          .then(res => {
+            finished = true;
+            clearTimeout(timeoutId);
+            if (res.ok) {
+              setStatus(true, "Fetch OK (200)");
+            } else {
+              // 502 Bad Gateway などを明確に落ちと判定
+              setStatus(false, "Server Error Status: " + res.status);
+            }
+          })
+          .catch(err => {
+            finished = true;
+            clearTimeout(timeoutId);
+            // ネットワークエラー、または502によるCORS遮断
+            setStatus(false, "Connection Failed / 502 Gateway Error");
+          });
+      };
+
+      // クエリパラメーターを付与してキャッシュを回避し favicon をプローブ
+      img.src = targetUrl + "/favicon.ico?_=" + Date.now();
     }
 
     checkServerStatus();
