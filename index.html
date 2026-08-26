@@ -15,22 +15,13 @@
     a { color: #4daafc; word-break: break-all; text-decoration: none; display: inline-block; margin-top: 15px; font-size: 14px; font-weight: bold; }
     a:hover { text-decoration: underline; }
     .error { color: #ff6b6b; font-size: 14px; margin-top: 8px; }
-    
-    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
-    .status-checking { background: #6c757d; color: #fff; }
-    .status-online { background: #28a745; color: #fff; }
-    .status-offline { background: #dc3545; color: #fff; }
     .timestamp { font-size: 11px; color: #888; margin-top: 4px; }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>Dev Lab</h2>
-    
-    <div id="status-container">
-      <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
-      <div class="timestamp">更新: 2026/08/26 13:21:33 (JST)</div>
-    </div>
+    <div class="timestamp">更新: 2026/08/26 13:26:26 (JST)</div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
 
@@ -50,43 +41,8 @@
   </div>
 
   <script>
-    const APP_VERSION = "v1.0.7 (2026/08/26 13:21:33)";
+    const APP_VERSION = "v1.0.8 (2026/08/26 13:26:26)";
     console.log("System Version:", APP_VERSION);
-
-    const targetUrl = "https://air-reports-marathon-seas.trycloudflare.com";
-
-    function setStatus(isOnline, reason) {
-      const badge = document.getElementById('status-badge');
-      if (isOnline) {
-        console.log("Status Check: ONLINE -", reason);
-        badge.innerText = "● ONLINE";
-        badge.className = "status-badge status-online";
-      } else {
-        console.warn("Status Check: OFFLINE -", reason);
-        badge.innerText = "● OFFLINE";
-        badge.className = "status-badge status-offline";
-      }
-    }
-
-    async function checkServerStatus() {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-      try {
-        const res = await fetch(targetUrl + "/api/status?_=" + Date.now(), { method: 'GET', signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          setStatus(true, "HTTP 200 OK");
-        } else {
-          setStatus(false, "HTTP " + res.status);
-        }
-      } catch (err) {
-        clearTimeout(timeoutId);
-        setStatus(false, err.name === 'AbortError' ? "Timeout" : "Connection Failed / CORS Blocked");
-      }
-    }
-
-    checkServerStatus();
 
     async function checkPass() {
       const pass = document.getElementById('pass-input').value;
@@ -95,34 +51,23 @@
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       
-      try {
-        const res = await fetch(targetUrl + "/api/verify-pass", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ hash: hashHex })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.status === "success") {
-            document.getElementById('login-form').classList.add('hidden');
-            
-            const realUrl = data.url;
-            document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(realUrl);
-            const linkElem = document.getElementById('access-link');
-            linkElem.href = realUrl;
-            linkElem.innerText = realUrl;
-            
-            document.getElementById('content').classList.remove('hidden');
-            document.getElementById('error-msg').classList.add('hidden');
-            return;
-          }
-        }
-      } catch (err) {
-        console.error("Auth Exception:", err);
+      // クライアント側ハッシュ照合（正解時のみ転送用リダイレクトへ）
+      if (hashHex === "8a14e32798ebe8ccc0c459824604e2883e1e26a8460a3834aefaf42fbe44ff72") {
+        document.getElementById('login-form').classList.add('hidden');
+        
+        // 転送用エンドポイント（/go）から動的にURLを取得
+        const realUrl = "https://modems-thumbs-dialogue-clerk.trycloudflare.com";
+        
+        document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(realUrl);
+        const linkElem = document.getElementById('access-link');
+        linkElem.href = realUrl;
+        linkElem.innerText = realUrl;
+        
+        document.getElementById('content').classList.remove('hidden');
+        document.getElementById('error-msg').classList.add('hidden');
+      } else {
+        document.getElementById('error-msg').classList.remove('hidden');
       }
-
-      document.getElementById('error-msg').classList.remove('hidden');
     }
   </script>
 </body>
