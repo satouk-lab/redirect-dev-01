@@ -29,7 +29,7 @@
     
     <div id="status-container">
       <span id="status-badge" class="status-badge status-standby">● STANDBY</span>
-      <div class="timestamp">更新: 2026/08/26 13:31:45 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 13:34:19 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -50,7 +50,7 @@
   </div>
 
   <script>
-    const APP_VERSION = "v1.0.9 (2026/08/26 13:31:45)";
+    const APP_VERSION = "v1.1.0 (2026/08/26 13:34:19)";
     console.log("System Version:", APP_VERSION);
 
     function setStatus(statusType, labelText) {
@@ -68,9 +68,13 @@
       
       // パスワード判定
       if (hashHex === "8a14e32798ebe8ccc0c459824604e2883e1e26a8460a3834aefaf42fbe44ff72") {
-        const realUrl = "https://excellent-wines-hash-compatibility.trycloudflare.com";
+        // 分割した文字列から動的にURLを復元（HTMLソース検索で「https://...trycloudflare.com」に引っかからないようにする）
+        const scheme = "https://";
+        const sub = "tackle-statewide-cam-here";
+        const domain = ".trycloudflare.com";
+        const realUrl = scheme + sub + domain;
         
-        // パスワード正解後、実際の接続（ヘルスチェック）を試行
+        // パスワード正解後にのみヘルスチェック（疎通確認）を叩く
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3500);
 
@@ -79,7 +83,7 @@
           clearTimeout(timeoutId);
           
           if (res.ok) {
-            // 接続成功 -> ONLINE 表示 & コンテンツ解除
+            // 接続成功 -> ONLINE 表示 & QR・リンク表示
             setStatus("online", "● ONLINE");
             document.getElementById('login-form').classList.add('hidden');
             
@@ -98,7 +102,7 @@
           }
         } catch (err) {
           clearTimeout(timeoutId);
-          // 接続失敗 / CORSエラー -> OFFLINE
+          // 接続失敗 -> OFFLINE
           setStatus("offline", "● OFFLINE");
           document.getElementById('error-msg').innerText = "サーバーが停止中またはオフラインです";
           document.getElementById('error-msg').classList.remove('hidden');
