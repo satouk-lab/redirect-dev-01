@@ -29,7 +29,7 @@
     
     <div id="status-container">
       <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
-      <div class="timestamp">更新: 2026/08/26 12:50:10 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 12:55:26 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -44,16 +44,16 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://proper-miniature-beings-continuous.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://proper-miniature-beings-continuous.trycloudflare.com" target="_blank" rel="noopener">https://proper-miniature-beings-continuous.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://everywhere-journal-managed-manga.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://everywhere-journal-managed-manga.trycloudflare.com" target="_blank" rel="noopener">https://everywhere-journal-managed-manga.trycloudflare.com</a>
     </div>
   </div>
 
   <script>
-    const APP_VERSION = "v1.0.4 (2026/08/26 12:50:10)";
+    const APP_VERSION = "v1.0.5 (2026/08/26 12:55:26)";
     console.log("System Version:", APP_VERSION);
 
-    const targetUrl = "https://proper-miniature-beings-continuous.trycloudflare.com";
+    const targetUrl = "https://everywhere-journal-managed-manga.trycloudflare.com";
 
     function setStatus(isOnline, reason) {
       const badge = document.getElementById('status-badge');
@@ -79,7 +79,7 @@
         if (res.ok) {
           setStatus(true, "HTTP 200 OK");
         } else {
-          setStatus(false, "HTTP " + res.status);
+          setStatus(false, "HTTP Status: " + res.status);
         }
       } catch (err) {
         clearTimeout(timeoutId);
@@ -88,24 +88,15 @@
           return;
         }
 
-        // CORSブロック等で例外が発生した場合
-        // TypeError ("Failed to fetch") で落ちた＝ローカルアプリ疎通あり（CORS拒否）＝ ONLINE
-        // ネットワーク到達不能や502応答時はブラウザのネットワーク仕様により区別
-        if (err.message.includes("Failed to fetch") || err.name === "TypeError") {
-          // 追加検証：no-corsで応答が返るか（502 Bad GatewayはResponseインスタンスを返す）
-          try {
-            const noCorsRes = await fetch(targetUrl + "/?_=" + Date.now(), { method: 'GET', mode: 'no-cors' });
-            // opaqueかつstatusが0＝正常なCORS制限応答（ONLINE）
-            if (noCorsRes.type === 'opaque' && noCorsRes.status === 0) {
-              setStatus(true, "App Server Active (CORS restricted)");
-            } else {
-              setStatus(false, "502 Gateway Error");
-            }
-          } catch (e) {
-            setStatus(false, "Network Error");
-          }
+        const errStr = String(err) + " " + (err.message || "");
+        console.log("Probe Catch Details:", errStr);
+
+        // 502 Bad Gateway やサーバー異常レスポンスがログに混ざっている場合は明確に OFFLINE
+        if (errStr.includes("502") || errStr.includes("Bad Gateway") || errStr.includes("500") || errStr.includes("503")) {
+          setStatus(false, "502 Bad Gateway (Container Stopped)");
         } else {
-          setStatus(false, err.message);
+          // コンテナ起動時（正常動作時）はCORS制限で Failed to fetch になるため ONLINE と判定
+          setStatus(true, "Container Running (CORS restricted)");
         }
       }
     }
