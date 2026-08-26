@@ -29,7 +29,7 @@
     
     <div id="status-container">
       <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
-      <div class="timestamp">更新: 2026/08/26 13:20:30 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 13:21:33 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -44,16 +44,16 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://produces-charge-data-sufficient.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://produces-charge-data-sufficient.trycloudflare.com" target="_blank" rel="noopener">https://produces-charge-data-sufficient.trycloudflare.com</a>
+      <img id="qr-img" src="" alt="QR Code"><br>
+      <a id="access-link" href="#" target="_blank" rel="noopener"></a>
     </div>
   </div>
 
   <script>
-    const APP_VERSION = "v1.0.6 (2026/08/26 13:20:30)";
+    const APP_VERSION = "v1.0.7 (2026/08/26 13:21:33)";
     console.log("System Version:", APP_VERSION);
 
-    const targetUrl = "https://produces-charge-data-sufficient.trycloudflare.com";
+    const targetUrl = "https://air-reports-marathon-seas.trycloudflare.com";
 
     function setStatus(isOnline, reason) {
       const badge = document.getElementById('status-badge');
@@ -69,24 +69,19 @@
     }
 
     async function checkServerStatus() {
-      console.log("Status Check: Starting probe...");
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
 
       try {
-        const res = await fetch(targetUrl + "/?_=" + Date.now(), { method: 'GET', signal: controller.signal });
+        const res = await fetch(targetUrl + "/api/status?_=" + Date.now(), { method: 'GET', signal: controller.signal });
         clearTimeout(timeoutId);
-        
-        // Python側でCORSが許可されていれば、コンテナONの時のみ res.ok (200 OK) に到達可能
         if (res.ok) {
-          setStatus(true, "HTTP " + res.status + " OK");
+          setStatus(true, "HTTP 200 OK");
         } else {
-          // 502 Bad Gateway やその他のエラー応答
-          setStatus(false, "HTTP " + res.status + " Error");
+          setStatus(false, "HTTP " + res.status);
         }
       } catch (err) {
         clearTimeout(timeoutId);
-        // CORSで弾かれた場合、ネットワークエラー、タイムアウトはすべてOFFLINEと判定
         setStatus(false, err.name === 'AbortError' ? "Timeout" : "Connection Failed / CORS Blocked");
       }
     }
@@ -100,12 +95,34 @@
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       
-      if (hashHex === "8a14e32798ebe8ccc0c459824604e2883e1e26a8460a3834aefaf42fbe44ff72") {
-        document.getElementById('login-form').classList.add('hidden');
-        document.getElementById('content').classList.remove('hidden');
-      } else {
-        document.getElementById('error-msg').classList.remove('hidden');
+      try {
+        const res = await fetch(targetUrl + "/api/verify-pass", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ hash: hashHex })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === "success") {
+            document.getElementById('login-form').classList.add('hidden');
+            
+            const realUrl = data.url;
+            document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(realUrl);
+            const linkElem = document.getElementById('access-link');
+            linkElem.href = realUrl;
+            linkElem.innerText = realUrl;
+            
+            document.getElementById('content').classList.remove('hidden');
+            document.getElementById('error-msg').classList.add('hidden');
+            return;
+          }
+        }
+      } catch (err) {
+        console.error("Auth Exception:", err);
       }
+
+      document.getElementById('error-msg').classList.remove('hidden');
     }
   </script>
 </body>
