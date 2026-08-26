@@ -16,7 +16,6 @@
     a:hover { text-decoration: underline; }
     .error { color: #ff6b6b; font-size: 14px; margin-top: 8px; }
     
-    /* ステータス表示バッジ */
     .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
     .status-checking { background: #6c757d; color: #fff; }
     .status-online { background: #28a745; color: #fff; }
@@ -30,7 +29,7 @@
     
     <div id="status-container">
       <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
-      <div class="timestamp">更新: 2026/08/26 10:49:41 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 10:51:34 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -45,90 +44,79 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://bicycle-hotel-sas-inf.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://bicycle-hotel-sas-inf.trycloudflare.com" target="_blank" rel="noopener">https://bicycle-hotel-sas-inf.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://depot-gained-solar-earn.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://depot-gained-solar-earn.trycloudflare.com" target="_blank" rel="noopener">https://depot-gained-solar-earn.trycloudflare.com</a>
     </div>
   </div>
 
   <script>
-    const targetUrl = "https://bicycle-hotel-sas-inf.trycloudflare.com";
-    let isSettled = false;
+    const targetUrl = "https://depot-gained-solar-earn.trycloudflare.com";
 
-    function setStatus(isOnline, source) {
-      if (isSettled) {
-        console.log("Status Check: Already settled, skip:", source);
-        return;
-      }
-      isSettled = true;
+    function setStatus(isOnline, reason) {
       const badge = document.getElementById('status-badge');
       if (isOnline) {
-        console.log("Status Check: ONLINE confirmed via", source);
+        console.log("Status Check: ONLINE -", reason);
         badge.innerText = "● ONLINE";
         badge.className = "status-badge status-online";
       } else {
-        console.warn("Status Check: OFFLINE confirmed via", source);
+        console.warn("Status Check: OFFLINE -", reason);
         badge.innerText = "● OFFLINE";
         badge.className = "status-badge status-offline";
       }
     }
 
-    // --- チェック1: Fetch Probe (no-cors) ---
-    async function probeFetch() {
-      console.log("Status Check: Fetching...");
-      const controller = new AbortController();
-      const timeout = setTimeout(() => {
-        controller.abort();
-        console.warn("Status Check: Fetch timeout");
-      }, 3500);
-
-      try {
-        await fetch(targetUrl + "/?_=" + Date.now(), { method: 'GET', mode: 'no-cors', signal: controller.signal });
-        clearTimeout(timeout);
-        console.log("Status Check: Fetch success");
-        setStatus(true, "Fetch API");
-      } catch (err) {
-        clearTimeout(timeout);
-        console.error("Status Check: Fetch error", err.message);
-        if (err.name === 'AbortError') {
-          setStatus(false, "Fetch Timeout");
-        }
-      }
-    }
-
-    // --- チェック2: Image Ping ---
-    function probeImage() {
-      console.log("Status Check: Image pinging...");
+    function checkServerStatus() {
+      console.log("Status Check: Starting image probe...");
       const img = new Image();
+      let finished = false;
+
+      // 3.5秒タイムアウト（応答がない場合はOFFLINE）
       const timeout = setTimeout(() => {
-        console.warn("Status Check: Image ping timeout");
-        setStatus(false, "Image Timeout");
+        if (!finished) {
+          finished = true;
+          setStatus(false, "Timeout (No Response)");
+        }
       }, 3500);
 
+      // 通常応答（200 OK等）で画像/HTMLが返ってきた場合
       img.onload = () => {
-        clearTimeout(timeout);
-        console.log("Status Check: Image loaded");
-        setStatus(true, "Image OnLoad");
+        if (!finished) {
+          finished = true;
+          clearTimeout(timeout);
+          setStatus(true, "Loaded successfully");
+        }
       };
 
+      // エラー発生時（CORSエラー/502エラー/断絶など）
       img.onerror = () => {
-        clearTimeout(timeout);
-        console.log("Status Check: Image error (Server responded)");
-        setStatus(true, "Image OnError");
+        if (!finished) {
+          finished = true;
+          clearTimeout(timeout);
+          // fetch等で実際にHTTPステータスをチェック
+          fetch(targetUrl + "/?_=" + Date.now())
+            .then(res => {
+              if (res.ok) {
+                setStatus(true, "Fetch 200 OK");
+              } else {
+                // 502 Bad Gateway などのエラー
+                setStatus(false, "Server Error: " + res.status);
+              }
+            })
+            .catch(err => {
+              // CORSブロック（TypeError）＝Pythonサーバー自体は応答している
+              if (err.name === 'TypeError') {
+                setStatus(true, "CORS Blocked (Server Alive)");
+              } else {
+                setStatus(false, "Connection Failed");
+              }
+            });
+        }
       };
 
       img.src = targetUrl + "/favicon.ico?_=" + Date.now();
     }
 
-    // --- チェック3: 最終セーフティタイムアウト ---
-    setTimeout(() => {
-      if (!isSettled) {
-        console.warn("Status Check: Safety timeout triggered");
-        setStatus(false, "Safety Timeout");
-      }
-    }, 4000);
-
-    probeFetch();
-    probeImage();
+    checkServerStatus();
 
     async function checkPass() {
       const pass = document.getElementById('pass-input').value;
