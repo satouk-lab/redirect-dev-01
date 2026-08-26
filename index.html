@@ -28,7 +28,7 @@
     <h2>Dev Lab</h2>
     <div id="status-container">
       <span id="status-badge" class="status-badge status-standby">● STANDBY</span>
-      <div class="timestamp">更新: 2026/08/26 14:18:58 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 14:26:32 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -49,11 +49,11 @@
   </div>
 
   <script>
-    const APP_VERSION = "v1.7.0 Encrypted Mode (2026/08/26 14:18:58)";
+    const APP_VERSION = "v1.7.0 Encrypted Mode (2026/08/26 14:26:32)";
     console.log("System Version:", APP_VERSION);
 
-    const ENC_DATA = "e265da342a15bb40ffe32f1bac22a0ee580b8112d963243767f15902399d155a";
-    const ENC_IV = "b2796fd8209f52ec0867a50bdc836b2e";
+    const ENC_DATA = "535a8adddc5e171c8ab320529c892cb806c524828e2ed9c133374d461ad2d91a";
+    const ENC_IV = "16b4dae7c24a1ec8e3ba27222f2b92c1";
 
     function setStatus(statusType, labelText) {
       const badge = document.getElementById('status-badge');
