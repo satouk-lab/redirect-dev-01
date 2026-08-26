@@ -6,7 +6,7 @@
   <title>In Dev Lab</title>
   <style>
     body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #121212; color: #fff; }
-    .card { text-align: center; padding: 2rem; background: #1e1e1e; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 320px; width: 90%; }
+    .card { text-align: center; padding: 2rem; background: #1e1e1e; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 340px; width: 90%; }
     input { padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #444; background: #2d2d2d; color: #fff; width: 80%; margin-bottom: 12px; text-align: center; }
     button { padding: 10px 20px; font-size: 16px; border-radius: 6px; border: none; background: #007acc; color: #fff; cursor: pointer; }
     button:hover { background: #005999; }
@@ -15,11 +15,26 @@
     a { color: #4daafc; word-break: break-all; text-decoration: none; display: inline-block; margin-top: 15px; font-size: 14px; font-weight: bold; }
     a:hover { text-decoration: underline; }
     .error { color: #ff6b6b; font-size: 14px; margin-top: 8px; }
+    
+    /* ステータス表示バッジ */
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
+    .status-checking { background: #6c757d; color: #fff; }
+    .status-online { background: #28a745; color: #fff; }
+    .status-offline { background: #dc3545; color: #fff; }
+    .timestamp { font-size: 11px; color: #888; margin-top: 4px; }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>Dev Lab</h2>
+    
+    <div id="status-container">
+      <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
+      <div class="timestamp">更新: 2026/08/26 10:32:34 (JST)</div>
+    </div>
+    
+    <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
+
     <div id="login-form">
       <p>Passcode</p>
       <input type="password" id="pass-input" placeholder="****">
@@ -30,12 +45,34 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://enhance-fusion-healthcare-wallet.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://enhance-fusion-healthcare-wallet.trycloudflare.com" target="_blank" rel="noopener">https://enhance-fusion-healthcare-wallet.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://tray-heating-elder-narrow.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://tray-heating-elder-narrow.trycloudflare.com" target="_blank" rel="noopener">https://tray-heating-elder-narrow.trycloudflare.com</a>
     </div>
   </div>
 
   <script>
+    const targetUrl = "https://tray-heating-elder-narrow.trycloudflare.com";
+
+    // ページ読み込み時にリアルタイムでPing疎通確認
+    async function checkServerStatus() {
+      const badge = document.getElementById('status-badge');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000); // 4秒タイムアウト
+
+      try {
+        // no-corsモードでリクエストを送り、接続可能かテスト
+        await fetch(targetUrl, { mode: 'no-cors', cache: 'no-store', signal: controller.signal });
+        clearTimeout(timeoutId);
+        badge.innerText = "● ONLINE";
+        badge.className = "status-badge status-online";
+      } catch (err) {
+        badge.innerText = "● OFFLINE";
+        badge.className = "status-badge status-offline";
+      }
+    }
+
+    checkServerStatus();
+
     async function checkPass() {
       const pass = document.getElementById('pass-input').value;
       
