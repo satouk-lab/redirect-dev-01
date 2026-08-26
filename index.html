@@ -30,7 +30,7 @@
     
     <div id="status-container">
       <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
-      <div class="timestamp">更新: 2026/08/26 10:48:22 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 10:49:41 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -45,28 +45,28 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://reed-proven-proven-dairy.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://reed-proven-proven-dairy.trycloudflare.com" target="_blank" rel="noopener">https://reed-proven-proven-dairy.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://bicycle-hotel-sas-inf.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://bicycle-hotel-sas-inf.trycloudflare.com" target="_blank" rel="noopener">https://bicycle-hotel-sas-inf.trycloudflare.com</a>
     </div>
   </div>
 
   <script>
-    const targetUrl = "https://reed-proven-proven-dairy.trycloudflare.com";
+    const targetUrl = "https://bicycle-hotel-sas-inf.trycloudflare.com";
     let isSettled = false;
 
     function setStatus(isOnline, source) {
       if (isSettled) {
-        console.log([Status Check] 決定済みのためスキップ ());
+        console.log("Status Check: Already settled, skip:", source);
         return;
       }
       isSettled = true;
       const badge = document.getElementById('status-badge');
       if (isOnline) {
-        console.log([Status Check] 🚀 ONLINE 確定 (判定源: ));
+        console.log("Status Check: ONLINE confirmed via", source);
         badge.innerText = "● ONLINE";
         badge.className = "status-badge status-online";
       } else {
-        console.warn([Status Check] ❌ OFFLINE 確定 (判定源: ));
+        console.warn("Status Check: OFFLINE confirmed via", source);
         badge.innerText = "● OFFLINE";
         badge.className = "status-badge status-offline";
       }
@@ -74,60 +74,59 @@
 
     // --- チェック1: Fetch Probe (no-cors) ---
     async function probeFetch() {
-      console.log("[Status Check] Fetch テスト開始...");
+      console.log("Status Check: Fetching...");
       const controller = new AbortController();
       const timeout = setTimeout(() => {
         controller.abort();
-        console.warn("[Status Check] Fetch タイムアウト");
+        console.warn("Status Check: Fetch timeout");
       }, 3500);
 
       try {
         await fetch(targetUrl + "/?_=" + Date.now(), { method: 'GET', mode: 'no-cors', signal: controller.signal });
         clearTimeout(timeout);
-        console.log("[Status Check] Fetch 応答あり (ネットワーク到達成功)");
+        console.log("Status Check: Fetch success");
         setStatus(true, "Fetch API");
       } catch (err) {
         clearTimeout(timeout);
-        console.error("[Status Check] Fetch エラー:", err.message);
+        console.error("Status Check: Fetch error", err.message);
         if (err.name === 'AbortError') {
           setStatus(false, "Fetch Timeout");
         }
       }
     }
 
-    // --- チェック2: Image Ping (Favicon / 応答テスト) ---
+    // --- チェック2: Image Ping ---
     function probeImage() {
-      console.log("[Status Check] Image Ping 開始...");
+      console.log("Status Check: Image pinging...");
       const img = new Image();
       const timeout = setTimeout(() => {
-        console.warn("[Status Check] Image Ping タイムアウト");
+        console.warn("Status Check: Image ping timeout");
         setStatus(false, "Image Timeout");
       }, 3500);
 
       img.onload = () => {
         clearTimeout(timeout);
-        console.log("[Status Check] Image 読み込み成功");
+        console.log("Status Check: Image loaded");
         setStatus(true, "Image OnLoad");
       };
 
       img.onerror = () => {
         clearTimeout(timeout);
-        console.log("[Status Check] Image エラー検知 (サーバーから応答受信)");
+        console.log("Status Check: Image error (Server responded)");
         setStatus(true, "Image OnError");
       };
 
       img.src = targetUrl + "/favicon.ico?_=" + Date.now();
     }
 
-    // --- チェック3: 最終セーフティネットタイムアウト (4秒) ---
+    // --- チェック3: 最終セーフティタイムアウト ---
     setTimeout(() => {
       if (!isSettled) {
-        console.warn("[Status Check] 最終セーフティタイムアウト発動");
+        console.warn("Status Check: Safety timeout triggered");
         setStatus(false, "Safety Timeout");
       }
     }, 4000);
 
-    // 並行実行（一番早いレスポンスを採用）
     probeFetch();
     probeImage();
 
