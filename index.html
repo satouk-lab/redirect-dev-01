@@ -170,7 +170,7 @@
   </div>
 
   <script>
-    const APP_VERSION = "v3.2.2 Fixed Key Sync";
+    const APP_VERSION = "v3.2.3 Secure Error Output";
     console.log("System Version:", APP_VERSION);
 
     const ENC_GIST_URL = "";
@@ -195,7 +195,7 @@
 
     function hexToBytes(hex) {
       if (!hex || hex.length % 2 !== 0) {
-        throw new Error(`Invalid Hex String (Length: ${hex ? hex.length : 0})`);
+        throw new Error("Invalid Hex String");
       }
       const bytes = new Uint8Array(hex.length / 2);
       for (let i = 0; i < bytes.length; i++) {
@@ -236,26 +236,28 @@
       btn.disabled = true;
       errorMsg.classList.add('hidden');
 
+      const genericError = "パスコードが正しくないか、サーバーが起動していません。";
+
       try {
-        console.log("[Step 1] Generating Gist IV...");
+        if (!ENC_GIST_URL) {
+          throw new Error(genericError);
+        }
+
         const gistIvBytes = await deriveGistIv(pass);
 
-        console.log("[Step 2] Decrypting Gist URL...");
         let gistUrl = "";
         try {
           gistUrl = await decryptData(ENC_GIST_URL, gistIvBytes, pass);
-          console.log("[Step 2 Success] Decrypted Gist URL:", gistUrl);
-        } catch (err) {
-          throw new Error(`[Step 2 Failed] Gist URL decryption error: ${err.message}`);
+        } catch {
+          throw new Error(genericError);
         }
 
-        console.log("[Step 3] Fetching Gist JSON...");
         let res;
         try {
           res = await fetch(gistUrl + "?_=" + Date.now());
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        } catch (err) {
-          throw new Error(`[Step 3 Failed] Gist Fetch error: ${err.message}`);
+          if (!res.ok) throw new Error(genericError);
+        } catch {
+          throw new Error(genericError);
         }
 
         const { ENC_DATA, ENC_IV, updatedAt } = await res.json();
@@ -264,16 +266,13 @@
           document.getElementById('update-time').innerText = "更新: " + updatedAt + " (JST)";
         }
 
-        console.log("[Step 4] Decrypting Tunnel URL...");
         let realUrl = "";
         try {
           realUrl = await decryptData(ENC_DATA, hexToBytes(ENC_IV), pass);
-          console.log("[Step 4 Success] Tunnel URL:", realUrl);
-        } catch (err) {
-          throw new Error(`[Step 4 Failed] Tunnel URL decryption error: ${err.message}`);
+        } catch {
+          throw new Error(genericError);
         }
 
-        console.log("[Step 5] Checking server connectivity...");
         const imgTester = new Image();
         let isHandled = false;
 
@@ -317,9 +316,8 @@
         imgTester.src = realUrl + "/static/favicon.ico?_=" + Date.now();
 
       } catch (e) {
-        console.error("DETAILED ERROR:", e);
         btn.disabled = false;
-        errorMsg.innerText = e.message;
+        errorMsg.innerText = e.message || genericError;
         errorMsg.classList.remove('hidden');
       }
     }
