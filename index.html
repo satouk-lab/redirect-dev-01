@@ -169,12 +169,11 @@
   </div>
 
   <script>
-    const APP_VERSION = "v3.0.0 Double-Encrypted Mode";
+    const APP_VERSION = "v3.1.0 Fixed IV Mode";
     console.log("System Version:", APP_VERSION);
 
-    // ★ Gist URLを暗号化した文字列とIV（後ほどPowerShellで生成する値に差し替えます）
-    const ENC_GIST_URL = "【ここに暗号化されたGistのURLを入れる】";
-    const ENC_GIST_IV = "【ここにGist URL用のIVを入れる】";
+    // ★ Gist URLを暗号化したHex文字列のみ保持
+    const ENC_GIST_URL = "【暗号化されたGistのURLを入れる】";
 
     function togglePassword() {
       const passInput = document.getElementById('pass-input');
@@ -203,7 +202,7 @@
     }
 
     // 共通のAES-256-CBC復号処理
-    async function decryptData(encHex, ivHex, pass) {
+    async function decryptData(encHex, ivBytes, pass) {
       const passBuffer = new TextEncoder().encode(pass);
       const keyHash = await crypto.subtle.digest('SHA-256', passBuffer);
       const cryptoKey = await crypto.subtle.importKey(
@@ -211,7 +210,7 @@
       );
 
       const decryptedBuffer = await crypto.subtle.decrypt(
-        { name: 'AES-CBC', iv: hexToBytes(ivHex) },
+        { name: 'AES-CBC', iv: ivBytes },
         cryptoKey,
         hexToBytes(encHex)
       );
@@ -229,10 +228,13 @@
       errorMsg.classList.add('hidden');
 
       try {
-        // ステップ1: パスワードを使って「GistのURL」自体を復号する
-        const gistUrl = await decryptData(ENC_GIST_URL, ENC_GIST_IV, pass);
+        // 固定16バイト（ゼロ埋め）のIVを適用
+        const zeroIv = new Uint8Array(16);
 
-        // ステップ2: 復号したURLを使ってGistからtunnel.jsonを取得
+        // ステップ1: 固定IVとパスワードで「GistのURL」を復号
+        const gistUrl = await decryptData(ENC_GIST_URL, zeroIv, pass);
+
+        // ステップ2: 復号したURLでGistからtunnel.jsonを取得
         const res = await fetch(gistUrl + "?_=" + Date.now());
         if (!res.ok) throw new Error("Gist fetch failed");
         const { ENC_DATA, ENC_IV, updatedAt } = await res.json();
@@ -241,10 +243,10 @@
           document.getElementById('update-time').innerText = "更新: " + updatedAt + " (JST)";
         }
 
-        // ステップ3: 同じパスワードを使って「トンネルURL」を復号する
-        const realUrl = await decryptData(ENC_DATA, ENC_IV, pass);
+        // ステップ3: tunnel.json 内の動的IVで「トンネルURL」を復号
+        const realUrl = await decryptData(ENC_DATA, hexToBytes(ENC_IV), pass);
 
-        // 以下、疎通確認および表示処理
+        // 疎通確認および表示処理
         const imgTester = new Image();
         let isHandled = false;
 
@@ -288,6 +290,7 @@
         imgTester.src = realUrl + "/static/favicon.ico?_=" + Date.now();
 
       } catch (e) {
+        console.error("DEBUG ERROR:", e);
         btn.disabled = false;
         errorMsg.innerText = "認証エラー";
         errorMsg.classList.remove('hidden');
