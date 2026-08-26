@@ -169,11 +169,11 @@
   </div>
 
   <script>
-    const APP_VERSION = "v3.1.0 Fixed IV Mode";
+    const APP_VERSION = "v3.2.0 Single Encrypted-Var Mode";
     console.log("System Version:", APP_VERSION);
 
-    // ★ Gist URLを暗号化したHex文字列のみ保持
-    const ENC_GIST_URL = "【暗号化されたGistのURLを入れる】";
+    // ★ ソースコード上に記述するのは暗号化されたGist URLのみ！
+    const ENC_GIST_URL = "【ここに暗号化されたGistのURLが入る】";
 
     function togglePassword() {
       const passInput = document.getElementById('pass-input');
@@ -199,6 +199,13 @@
         bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
       }
       return bytes;
+    }
+
+    // パスワードからGist用IV（env.phpのGIST_IV相当）を算出する関数
+    async function getGistIvFromPass(pass) {
+      const passBuffer = new TextEncoder().encode(pass + "_gist_iv_salt");
+      const hashBuffer = await crypto.subtle.digest('SHA-256', passBuffer);
+      return new Uint8Array(hashBuffer).slice(0, 16);
     }
 
     // 共通のAES-256-CBC復号処理
@@ -228,13 +235,13 @@
       errorMsg.classList.add('hidden');
 
       try {
-        // 固定16バイト（ゼロ埋め）のIVを適用
-        const zeroIv = new Uint8Array(16);
+        // ステップ1: パスワードからGist復号用のIVを計算
+        const gistIvBytes = await getGistIvFromPass(pass);
 
-        // ステップ1: 固定IVとパスワードで「GistのURL」を復号
-        const gistUrl = await decryptData(ENC_GIST_URL, zeroIv, pass);
+        // ステップ2: Gist URLを復号
+        const gistUrl = await decryptData(ENC_GIST_URL, gistIvBytes, pass);
 
-        // ステップ2: 復号したURLでGistからtunnel.jsonを取得
+        // ステップ3: Gistからtunnel.jsonを取得
         const res = await fetch(gistUrl + "?_=" + Date.now());
         if (!res.ok) throw new Error("Gist fetch failed");
         const { ENC_DATA, ENC_IV, updatedAt } = await res.json();
@@ -243,7 +250,7 @@
           document.getElementById('update-time').innerText = "更新: " + updatedAt + " (JST)";
         }
 
-        // ステップ3: tunnel.json 内の動的IVで「トンネルURL」を復号
+        // ステップ4: tunnel.json 内の動的IVを使ってトンネルURLを復号
         const realUrl = await decryptData(ENC_DATA, hexToBytes(ENC_IV), pass);
 
         // 疎通確認および表示処理
