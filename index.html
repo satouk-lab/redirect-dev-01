@@ -27,7 +27,7 @@
     <h2>Dev Lab</h2>
     <div id="status-container">
       <span id="status-badge" class="status-badge status-standby">● STANDBY</span>
-      <div class="timestamp">更新: 2026/08/26 13:48:18 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 13:50:10 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -48,7 +48,7 @@
   </div>
 
   <script>
-    const APP_VERSION = "v1.4.0 (2026/08/26 13:48:18)";
+    const APP_VERSION = "v1.5.0 (2026/08/26 13:50:10)";
     console.log("System Version:", APP_VERSION);
 
     function setStatus(statusType, labelText) {
@@ -73,7 +73,7 @@
         
         // URL動的生成
         const scheme = "https://";
-        const sub = "span-holes-description-mechanics";
+        const sub = "female-latest-requests-rain";
         const domain = ".trycloudflare.com";
         const realUrl = scheme + sub + domain;
 
@@ -126,7 +126,7 @@
         imgTester.onerror = handleError;
         
         // パラメータ付与してキャッシュ回避実行
-        imgTester.src = realUrl + "/favicon.ico?_=" + Date.now();
+        imgTester.src = realUrl + "/static/favicon.ico?_=" + Date.now();
 
       } else {
         errorMsg.innerText = "認証エラー";
