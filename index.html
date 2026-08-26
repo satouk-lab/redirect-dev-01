@@ -169,10 +169,12 @@
   </div>
 
   <script>
-    const APP_VERSION = "v2.0.0 Gist-Encrypted Mode";
+    const APP_VERSION = "v3.0.0 Double-Encrypted Mode";
     console.log("System Version:", APP_VERSION);
 
-    const GIST_RAW_URL = "https://gist.githubusercontent.com/raw/1ce416433a636498c96f3a998bc44209/tunnel.json";
+    // ★ Gist URLを暗号化した文字列とIV（後ほどPowerShellで生成する値に差し替えます）
+    const ENC_GIST_URL = "【ここに暗号化されたGistのURLを入れる】";
+    const ENC_GIST_IV = "【ここにGist URL用のIVを入れる】";
 
     function togglePassword() {
       const passInput = document.getElementById('pass-input');
@@ -200,6 +202,23 @@
       return bytes;
     }
 
+    // 共通のAES-256-CBC復号処理
+    async function decryptData(encHex, ivHex, pass) {
+      const passBuffer = new TextEncoder().encode(pass);
+      const keyHash = await crypto.subtle.digest('SHA-256', passBuffer);
+      const cryptoKey = await crypto.subtle.importKey(
+        'raw', keyHash, { name: 'AES-CBC' }, false, ['decrypt']
+      );
+
+      const decryptedBuffer = await crypto.subtle.decrypt(
+        { name: 'AES-CBC', iv: hexToBytes(ivHex) },
+        cryptoKey,
+        hexToBytes(encHex)
+      );
+
+      return new TextDecoder().decode(decryptedBuffer);
+    }
+
     async function checkPass() {
       const btn = document.getElementById('btn-enter');
       const pass = document.getElementById('pass-input').value.trim();
@@ -210,7 +229,11 @@
       errorMsg.classList.add('hidden');
 
       try {
-        const res = await fetch(GIST_RAW_URL + "?_=" + Date.now());
+        // ステップ1: パスワードを使って「GistのURL」自体を復号する
+        const gistUrl = await decryptData(ENC_GIST_URL, ENC_GIST_IV, pass);
+
+        // ステップ2: 復号したURLを使ってGistからtunnel.jsonを取得
+        const res = await fetch(gistUrl + "?_=" + Date.now());
         if (!res.ok) throw new Error("Gist fetch failed");
         const { ENC_DATA, ENC_IV, updatedAt } = await res.json();
 
@@ -218,20 +241,10 @@
           document.getElementById('update-time').innerText = "更新: " + updatedAt + " (JST)";
         }
 
-        const passBuffer = new TextEncoder().encode(pass);
-        const keyHash = await crypto.subtle.digest('SHA-256', passBuffer);
-        const cryptoKey = await crypto.subtle.importKey(
-          'raw', keyHash, { name: 'AES-CBC' }, false, ['decrypt']
-        );
+        // ステップ3: 同じパスワードを使って「トンネルURL」を復号する
+        const realUrl = await decryptData(ENC_DATA, ENC_IV, pass);
 
-        const decryptedBuffer = await crypto.subtle.decrypt(
-          { name: 'AES-CBC', iv: hexToBytes(ENC_IV) },
-          cryptoKey,
-          hexToBytes(ENC_DATA)
-        );
-
-        const realUrl = new TextDecoder().decode(decryptedBuffer);
-
+        // 以下、疎通確認および表示処理
         const imgTester = new Image();
         let isHandled = false;
 
