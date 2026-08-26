@@ -25,11 +25,11 @@
 </head>
 <body>
   <div class="card">
-    2Dev Lab</h2>
+    <h2>Dev Lab</h2>
     
     <div id="status-container">
       <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
-      <div class="timestamp">更新: 2026/08/26 12:46:38 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 12:50:10 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -44,16 +44,16 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://villas-log-searches-taste.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://villas-log-searches-taste.trycloudflare.com" target="_blank" rel="noopener">https://villas-log-searches-taste.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://proper-miniature-beings-continuous.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://proper-miniature-beings-continuous.trycloudflare.com" target="_blank" rel="noopener">https://proper-miniature-beings-continuous.trycloudflare.com</a>
     </div>
   </div>
 
   <script>
-    const APP_VERSION = "v1.0.3 (2026/08/26 12:46:38)";
+    const APP_VERSION = "v1.0.4 (2026/08/26 12:50:10)";
     console.log("System Version:", APP_VERSION);
 
-    const targetUrl = "https://villas-log-searches-taste.trycloudflare.com";
+    const targetUrl = "https://proper-miniature-beings-continuous.trycloudflare.com";
 
     function setStatus(isOnline, reason) {
       const badge = document.getElementById('status-badge');
@@ -68,55 +68,46 @@
       }
     }
 
-    function checkServerStatus() {
+    async function checkServerStatus() {
       console.log("Status Check: Starting probe...");
-      
-      let finished = false;
-      const img = new Image();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-      // 3.5秒タイムアウト処理
-      const timeoutId = setTimeout(() => {
-        if (!finished) {
-          finished = true;
-          setStatus(false, "Probe Timeout");
+      try {
+        const res = await fetch(targetUrl + "/?_=" + Date.now(), { method: 'GET', signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          setStatus(true, "HTTP 200 OK");
+        } else {
+          setStatus(false, "HTTP " + res.status);
         }
-      }, 3500);
-
-      // サーバーが生きていて画像等のリソース応答を返した場合は onload/onerror の挙動で検知
-      // 502 Bad Gateway(HTMLページ)が返った場合は画像としてパースできず onerror が発火
-      img.onload = () => {
-        if (!finished) {
-          finished = true;
-          clearTimeout(timeoutId);
-          setStatus(true, "Favicon loaded");
+      } catch (err) {
+        clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+          setStatus(false, "Timeout");
+          return;
         }
-      };
 
-      img.onerror = () => {
-        if (finished) return;
-        
-        // 通常の fetch でステータスコードを精密判定
-        fetch(targetUrl + "/?_=" + Date.now())
-          .then(res => {
-            finished = true;
-            clearTimeout(timeoutId);
-            if (res.ok) {
-              setStatus(true, "Fetch OK (200)");
+        // CORSブロック等で例外が発生した場合
+        // TypeError ("Failed to fetch") で落ちた＝ローカルアプリ疎通あり（CORS拒否）＝ ONLINE
+        // ネットワーク到達不能や502応答時はブラウザのネットワーク仕様により区別
+        if (err.message.includes("Failed to fetch") || err.name === "TypeError") {
+          // 追加検証：no-corsで応答が返るか（502 Bad GatewayはResponseインスタンスを返す）
+          try {
+            const noCorsRes = await fetch(targetUrl + "/?_=" + Date.now(), { method: 'GET', mode: 'no-cors' });
+            // opaqueかつstatusが0＝正常なCORS制限応答（ONLINE）
+            if (noCorsRes.type === 'opaque' && noCorsRes.status === 0) {
+              setStatus(true, "App Server Active (CORS restricted)");
             } else {
-              // 502 Bad Gateway などを明確に落ちと判定
-              setStatus(false, "Server Error Status: " + res.status);
+              setStatus(false, "502 Gateway Error");
             }
-          })
-          .catch(err => {
-            finished = true;
-            clearTimeout(timeoutId);
-            // ネットワークエラー、または502によるCORS遮断
-            setStatus(false, "Connection Failed / 502 Gateway Error");
-          });
-      };
-
-      // クエリパラメーターを付与してキャッシュを回避し favicon をプローブ
-      img.src = targetUrl + "/favicon.ico?_=" + Date.now();
+          } catch (e) {
+            setStatus(false, "Network Error");
+          }
+        } else {
+          setStatus(false, err.message);
+        }
+      }
     }
 
     checkServerStatus();
