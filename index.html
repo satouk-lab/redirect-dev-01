@@ -29,7 +29,7 @@
     
     <div id="status-container">
       <span id="status-badge" class="status-badge status-checking">CHECKING...</span>
-      <div class="timestamp">更新: 2026/08/26 10:55:41 (JST)</div>
+      <div class="timestamp">更新: 2026/08/26 10:59:04 (JST)</div>
     </div>
     
     <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
@@ -44,16 +44,16 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://cow-penetration-arch-foster.trycloudflare.com" alt="QR Code"><br>
-      <a href="https://cow-penetration-arch-foster.trycloudflare.com" target="_blank" rel="noopener">https://cow-penetration-arch-foster.trycloudflare.com</a>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://bean-structure-relates-commissioners.trycloudflare.com" alt="QR Code"><br>
+      <a href="https://bean-structure-relates-commissioners.trycloudflare.com" target="_blank" rel="noopener">https://bean-structure-relates-commissioners.trycloudflare.com</a>
     </div>
   </div>
 
   <script>
-    const APP_VERSION = "v1.0.0 (2026/08/26 10:55:41)";
+    const APP_VERSION = "v1.0.1 (2026/08/26 10:59:04)";
     console.log("System Version:", APP_VERSION);
 
-    const targetUrl = "https://cow-penetration-arch-foster.trycloudflare.com";
+    const targetUrl = "https://bean-structure-relates-commissioners.trycloudflare.com";
 
     function setStatus(isOnline, reason) {
       const badge = document.getElementById('status-badge');
@@ -69,51 +69,45 @@
     }
 
     function checkServerStatus() {
-      console.log("Status Check: Starting image probe...");
+      console.log("Status Check: Starting probe...");
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      // favicon.ico などの画像パスへ Image タグで試行
       const img = new Image();
       let finished = false;
 
-      // 3.5秒タイムアウト（応答がない場合はOFFLINE）
-      const timeout = setTimeout(() => {
-        if (!finished) {
-          finished = true;
-          setStatus(false, "Timeout (No Response)");
-        }
-      }, 3500);
-
-      // 通常応答（200 OK等）で画像/HTMLが返ってきた場合
       img.onload = () => {
         if (!finished) {
           finished = true;
-          clearTimeout(timeout);
-          setStatus(true, "Loaded successfully");
+          clearTimeout(timeoutId);
+          setStatus(true, "Favicon loaded");
         }
       };
 
-      // エラー発生時（CORSエラー/502エラー/断絶など）
       img.onerror = () => {
-        if (!finished) {
-          finished = true;
-          clearTimeout(timeout);
-          // fetch等で実際にHTTPステータスをチェック
-          fetch(targetUrl + "/?_=" + Date.now())
-            .then(res => {
-              if (res.ok) {
-                setStatus(true, "Fetch 200 OK");
-              } else {
-                // 502 Bad Gateway などのエラー
-                setStatus(false, "Server Error: " + res.status);
-              }
-            })
-            .catch(err => {
-              // CORSブロック（TypeError）＝Pythonサーバー自体は応答している
-              if (err.name === 'TypeError') {
-                setStatus(true, "CORS Blocked (Server Alive)");
-              } else {
-                setStatus(false, "Connection Failed");
-              }
-            });
-        }
+        if (finished) return;
+        
+        // Image が失敗した場合（HTMLの502エラーページが返ってきた、またはCORSで画像読み込み失敗）
+        // fetch で HTTP レスポンスヘッダーおよびネットワーク状態を最終検証
+        fetch(targetUrl + "/?_=" + Date.now(), { method: 'GET', signal: controller.signal })
+          .then(res => {
+            finished = true;
+            clearTimeout(timeoutId);
+            if (res.ok) {
+              setStatus(true, "Fetch 200 OK");
+            } else {
+              // 502 Bad Gateway 等のHTTPエラーコードが返ってきた場合
+              setStatus(false, "HTTP Error Status: " + res.status);
+            }
+          })
+          .catch(err => {
+            finished = true;
+            clearTimeout(timeoutId);
+            // サーバー不達（コンテナ停止による 502 / CORSブロック含む接続拒否）
+            setStatus(false, "Connection / Gateway Error (" + err.name + ")");
+          });
       };
 
       img.src = targetUrl + "/favicon.ico?_=" + Date.now();
