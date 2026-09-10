@@ -170,10 +170,22 @@
   </div>
 
   <script>
-    const APP_VERSION = "v3.2.3 Secure Error Output";
+    const APP_VERSION = "v3.2.4 Immediate Build Time Output";
     console.log("System Version:", APP_VERSION);
 
+    // PowerShellから置換更新される定数
     const ENC_GIST_URL = "4b5aa0eef3a42c885f35e6a370d6dc48c5a905bcef567cc92317efc032f1de320704bc8a97a12af89ea912ea8b3b9f28805ada5d41978022a65f9dc470130a721e8ea4d7a63b26a64c1750cbd124eb445ea9dd474036c8ed6b85cf8133e641ae";
+    const LAST_BUILD_TIME = "2026/09/10 10:04:48"; // ★ PowerShellの置換対象
+
+    // 画面ロード時にパスワード入力を待たず即座に更新日時を反映
+    window.addEventListener('DOMContentLoaded', () => {
+      const timeElem = document.getElementById('update-time');
+      if (LAST_BUILD_TIME && LAST_BUILD_TIME !== "----/--/-- --:--:--") {
+        timeElem.innerText = "更新: " + LAST_BUILD_TIME + " (JST)";
+      } else {
+        timeElem.innerText = "更新日時: 不明";
+      }
+    });
 
     function togglePassword() {
       const passInput = document.getElementById('pass-input');
@@ -262,6 +274,7 @@
 
         const { ENC_DATA, ENC_IV, updatedAt } = await res.json();
 
+        // Gist内に最新のupdatedAtがあれば上書き表示（念のため）
         if (updatedAt) {
           document.getElementById('update-time').innerText = "更新: " + updatedAt + " (JST)";
         }
@@ -325,13 +338,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
