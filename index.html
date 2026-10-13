@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow, noarchive">
   <title>In Dev Lab 1</title>
-  <!-- ローカル描画用のQRコードライブラリを追加 -->
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body {
@@ -168,7 +168,7 @@
 
     <div id="content" class="hidden">
       <p>Access Link</p>
-      <!-- 外部APIではなく要素内へ自前描画するコンテナに変更 -->
+
       <div id="qr-container"></div><br>
       <a id="access-link" href="#" target="_blank" rel="noopener"></a>
     </div>
@@ -178,9 +178,8 @@
     const APP_VERSION = "v3.3.0 Security Refactored";
     console.log("System Version:", APP_VERSION);
 
-    // PowerShellから置換更新される定数
-    const ENC_GIST_URL = "8d858a7294dccf35a85451fc2301423747fef7d4c055b65a6782d0e9afc667c64e53b2daf1e6664fbfb90041d0b76a73a2ca376300445498af181ebd34644297d5013645eb3bc56cb670c65f8935ae077f680003e1dd2bc053054b528e25267760ff1378b71744baab72a05e2b137250";
-    const LAST_BUILD_TIME = "2026/10/13 15:12:40"; // ★ PowerShellの置換対象
+    const ENC_GIST_URL = "c17bc63b3d7877b493e098c66c1bf7d54591238646659c8383819db1227b4604067a9bdf3170c91caf7f703dea97f83822d56e9b3e8322b57acd94db7ba49e3e45d8456be2ff008c0558e7710baa931d3798fcf9801920a31e1983eb687a69014b1d198f338b450bbe6e771e2ab53c1b";
+    const LAST_BUILD_TIME = "2026/10/14 08:56:35";
 
     window.addEventListener('DOMContentLoaded', () => {
       const timeElem = document.getElementById('update-time');
@@ -253,7 +252,6 @@
           throw new Error(genericError);
         }
 
-        // 先頭32文字(16バイト)をランダムIVとして抽出、残りを暗号データとして切り出し
         const gistIvHex = ENC_GIST_URL.substring(0, 32);
         const gistEncHex = ENC_GIST_URL.substring(32);
         const gistIvBytes = hexToBytes(gistIvHex);
@@ -346,5 +344,3 @@
 </body>
 
 </html>
-
-
