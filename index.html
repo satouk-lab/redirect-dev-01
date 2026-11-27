@@ -2,449 +2,448 @@
 <html lang="ja">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow, noarchive">
-  <title>In Dev Lab 1</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <title>In Dev Lab 1</title>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background: #121212;
-      color: #fff;
-    }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #121212;
+            color: #fff;
+        }
 
-    .card {
-      text-align: center;
-      padding: 2rem;
-      background: #1e1e1e;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-      max-width: 340px;
-      width: 90%;
-    }
+        .card {
+            text-align: center;
+            padding: 2rem;
+            background: #1e1e1e;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            max-width: 340px;
+            width: 90%;
+        }
 
-    .input-group {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 80%;
-      margin: 0 auto 12px auto;
-    }
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80%;
+            margin: 0 auto 12px auto;
+        }
 
-    input {
-      padding: 10px 40px 10px 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #444;
-      background: #2d2d2d;
-      color: #fff;
-      width: 100%;
-      text-align: center;
-      box-sizing: border-box;
-    }
+        input {
+            padding: 10px 40px 10px 10px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #2d2d2d;
+            color: #fff;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
 
-    .toggle-btn {
-      position: absolute;
-      right: 8px;
-      background: none;
-      border: none;
-      color: #888;
-      cursor: pointer;
-      font-size: 18px;
-      padding: 4px 8px;
-    }
+        .toggle-btn {
+            position: absolute;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px 8px;
+        }
 
-    .toggle-btn:hover {
-      color: #fff;
-      background: none;
-    }
+        .toggle-btn:hover {
+            color: #fff;
+            background: none;
+        }
 
-    button#btn-enter {
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      background: #007acc;
-      color: #fff;
-      cursor: pointer;
-    }
+        button#btn-enter {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: none;
+            background: #007acc;
+            color: #fff;
+            cursor: pointer;
+        }
 
-    button#btn-enter:hover {
-      background: #005999;
-    }
+        button#btn-enter:hover {
+            background: #005999;
+        }
 
-    .hidden {
-      display: none;
-    }
+        .hidden {
+            display: none;
+        }
 
-    #qr-container {
-      margin-top: 15px;
-      display: inline-block;
-      background: #fff;
-      padding: 12px;
-      border-radius: 8px;
-    }
+        #qr-container {
+            margin-top: 15px;
+            display: inline-block;
+            background: #fff;
+            padding: 12px;
+            border-radius: 8px;
+        }
 
-    a {
-      color: #4daafc;
-      word-break: break-all;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 15px;
-      font-size: 14px;
-      font-weight: bold;
-    }
+        a {
+            color: #4daafc;
+            word-break: break-all;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
 
-    a:hover {
-      text-decoration: underline;
-    }
+        a:hover {
+            text-decoration: underline;
+        }
 
-    .error {
-      color: #ff6b6b;
-      font-size: 13px;
-      margin-top: 8px;
-      word-break: break-all;
-    }
+        .error {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 8px;
+            word-break: break-all;
+        }
 
-    .status-badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
 
-    .status-standby {
-      background: #6c757d;
-      color: #fff;
-    }
+        .status-standby {
+            background: #6c757d;
+            color: #fff;
+        }
 
-    .status-online {
-      background: #28a745;
-      color: #fff;
-    }
+        .status-online {
+            background: #28a745;
+            color: #fff;
+        }
 
-    .status-offline {
-      background: #dc3545;
-      color: #fff;
-    }
+        .status-offline {
+            background: #dc3545;
+            color: #fff;
+        }
 
-    .timestamp {
-      font-size: 11px;
-      color: #888;
-      margin-top: 4px;
-    }
-  </style>
+        .timestamp {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+    </style>
 </head>
 
 <body>
-  <div class="card">
-    <h2>In Dev Lab 1</h2>
-    <div id="status-container">
-      <span id="status-badge" class="status-badge status-standby">● STANDBY</span>
-      <div id="update-time" class="timestamp">更新日時を取得中...</div>
+    <div class="card">
+        <h2>In Dev Lab 1</h2>
+        <div id="status-container">
+            <span id="status-badge" class="status-badge status-standby">● STANDBY</span>
+            <div id="update-time" class="timestamp">更新日時を取得中...</div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
+
+        <div id="login-form">
+            <p>Passcode</p>
+            <div class="input-group">
+                <input type="password" id="pass-input" placeholder="****">
+                <button type="button" id="btn-toggle-pass" class="toggle-btn" onclick="togglePassword()">👁️</button>
+            </div>
+            <button id="btn-enter" onclick="checkPass()">Enter</button>
+            <p id="error-msg" class="error hidden"></p>
+        </div>
+
+        <div id="content" class="hidden">
+            <p>Access Link</p>
+
+            <div id="qr-container"></div><br>
+            <a id="access-link" href="#" target="_blank" rel="noopener"></a>
+        </div>
     </div>
 
-    <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
+    <script>
+        const APP_VERSION = "v3.4.0 AES-GCM";
+        console.log("System Version:", APP_VERSION);
 
-    <div id="login-form">
-      <p>Passcode</p>
-      <div class="input-group">
-        <input type="password" id="pass-input" placeholder="****">
-        <button type="button" id="btn-toggle-pass" class="toggle-btn" onclick="togglePassword()">👁️</button>
-      </div>
-      <button id="btn-enter" onclick="checkPass()">Enter</button>
-      <p id="error-msg" class="error hidden"></p>
-    </div>
+        const ENC_GIST_URL = "c3b5a29a079f16d295a07190e9e7ca9747a07415402018483b4f04d2b1aa1f447086cf19199c5ce9a3b1797744299dddf47668891a68880192cc1a59d4ae02f997e5226deffe84c70ea6076dcf7197ff004f30ab8635d6026fd6446e833cdefd31954813b2adf4c41a67fbf92fe7a77ddc";
+        const LAST_BUILD_TIME = "2026/11/27 17:25:41";
 
-    <div id="content" class="hidden">
-      <p>Access Link</p>
+        const NONCE_HEX_LEN = 24; // 12 bytes
+        const TAG_HEX_LEN = 32;   // 16 bytes
+        const NONCE_BYTE_LEN = 12;
+        const TAG_BYTE_LEN = 16;
 
-      <div id="qr-container"></div><br>
-      <a id="access-link" href="#" target="_blank" rel="noopener"></a>
-    </div>
-  </div>
+        window.addEventListener('DOMContentLoaded', () => {
+            const timeElem = document.getElementById('update-time');
+            if (LAST_BUILD_TIME && LAST_BUILD_TIME !== "----/--/-- --:--:--") {
+                timeElem.innerText = "更新: " + LAST_BUILD_TIME + " (JST)";
+            } else {
+                timeElem.innerText = "更新日時: 不明";
+            }
+        });
 
-  <script>
-    const APP_VERSION = "v3.4.0 AES-GCM";
-    console.log("System Version:", APP_VERSION);
-
-    const ENC_GIST_URL = "54be84db06c77fd1923f5e6573366aeb7457040fd821eadfcb410f43f0f708eeee0d2648fcda2c6297525da170d4f40579aeba4e83ba9a7136a96f886e8b0083496e259e4566e927a3264c14b6b2ccc2bf7e1b064e7bfd863b296ba79147c97dfe1a3f7babfec320e8ea4aa7d94f20e41f";
-    const LAST_BUILD_TIME = "2026/11/27 17:13:58";
-
-    const NONCE_HEX_LEN = 24; // 12 bytes
-    const TAG_HEX_LEN = 32;   // 16 bytes
-    const NONCE_BYTE_LEN = 12;
-    const TAG_BYTE_LEN = 16;
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const timeElem = document.getElementById('update-time');
-      if (LAST_BUILD_TIME && LAST_BUILD_TIME !== "----/--/-- --:--:--") {
-        timeElem.innerText = "更新: " + LAST_BUILD_TIME + " (JST)";
-      } else {
-        timeElem.innerText = "更新日時: 不明";
-      }
-    });
-
-    function togglePassword() {
-      const passInput = document.getElementById('pass-input');
-      const toggleBtn = document.getElementById('btn-toggle-pass');
-      if (passInput.type === 'password') {
-        passInput.type = 'text';
-        toggleBtn.innerText = '🙈';
-      } else {
-        passInput.type = 'password';
-        toggleBtn.innerText = '👁️';
-      }
-    }
-
-    function setStatus(statusType, labelText) {
-      const badge = document.getElementById('status-badge');
-      badge.innerText = labelText;
-      badge.className = "status-badge status-" + statusType;
-    }
-
-    function hexToBytes(hex, expectedByteLen = null) {
-      if (typeof hex !== 'string' || hex.length === 0 || hex.length % 2 !== 0) {
-        throw new Error("INVALID_HEX_LENGTH");
-      }
-      if (!/^[0-9a-fA-F]+$/.test(hex)) {
-        throw new Error("INVALID_HEX_CHAR");
-      }
-      const byteLen = hex.length / 2;
-      if (expectedByteLen !== null && byteLen !== expectedByteLen) {
-        throw new Error("INVALID_HEX_BYTE_LENGTH");
-      }
-      const bytes = new Uint8Array(byteLen);
-      for (let i = 0; i < byteLen; i++) {
-        bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-      }
-      return bytes;
-    }
-
-    async function deriveAesGcmKey(pass) {
-      const passBuffer = new TextEncoder().encode(pass);
-      const keyHash = await crypto.subtle.digest('SHA-256', passBuffer);
-      return crypto.subtle.importKey(
-        'raw',
-        keyHash,
-        { name: 'AES-GCM' },
-        false,
-        ['decrypt']
-      );
-    }
-
-    async function decryptAesGcm(cipherHex, nonceHex, tagHex, cryptoKey) {
-      const nonceBytes = hexToBytes(nonceHex, NONCE_BYTE_LEN);
-      const tagBytes = hexToBytes(tagHex, TAG_BYTE_LEN);
-      const cipherBytes = hexToBytes(cipherHex, null);
-
-      const combined = new Uint8Array(cipherBytes.length + tagBytes.length);
-      combined.set(cipherBytes, 0);
-      combined.set(tagBytes, cipherBytes.length);
-
-      const decryptedBuffer = await crypto.subtle.decrypt(
-        {
-          name: 'AES-GCM',
-          iv: nonceBytes,
-          tagLength: 128
-        },
-        cryptoKey,
-        combined
-      );
-
-      return new TextDecoder().decode(decryptedBuffer);
-    }
-
-    function parsePackedGistHex(packedHex) {
-      if (typeof packedHex !== 'string') {
-        throw new Error("INVALID_PACKED_FORMAT");
-      }
-      const trimmed = packedHex.trim();
-      // 最低でも nonce(24) + 暗号文(最低2文字以上) + tag(32) が必要
-      if (trimmed.length <= NONCE_HEX_LEN + TAG_HEX_LEN || trimmed.length % 2 !== 0) {
-        throw new Error("INVALID_PACKED_LENGTH");
-      }
-      if (!/^[0-9a-fA-F]+$/.test(trimmed)) {
-        throw new Error("INVALID_PACKED_HEX");
-      }
-
-      const nonceHex = trimmed.slice(0, NONCE_HEX_LEN);
-      const tagHex = trimmed.slice(trimmed.length - TAG_HEX_LEN);
-      const cipherHex = trimmed.slice(NONCE_HEX_LEN, trimmed.length - TAG_HEX_LEN);
-
-      return { nonceHex, cipherHex, tagHex };
-    }
-
-    function isValidHttpsUrl(urlStr) {
-      try {
-        const parsed = new URL(urlStr);
-        return parsed.protocol === 'https:';
-      } catch {
-        return false;
-      }
-    }
-
-    async function checkPass() {
-      const btn = document.getElementById('btn-enter');
-      const passInput = document.getElementById('pass-input');
-      const pass = passInput.value.trim();
-      const errorMsg = document.getElementById('error-msg');
-
-      if (!pass) return;
-      btn.disabled = true;
-      errorMsg.classList.add('hidden');
-
-      const authFailedMsg = "パスワードが違うか、データが破損・改ざんされています。";
-
-      try {
-        let cryptoKey;
-        try {
-          cryptoKey = await deriveAesGcmKey(pass);
-        } catch {
-          throw new Error(authFailedMsg);
+        function togglePassword() {
+            const passInput = document.getElementById('pass-input');
+            const toggleBtn = document.getElementById('btn-toggle-pass');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                toggleBtn.innerText = '🙈';
+            } else {
+                passInput.type = 'password';
+                toggleBtn.innerText = '👁️';
+            }
         }
 
-        // 1. ENC_GIST_URL の復号（認証成功前は外部通信しない）
-        let gistUrl = "";
-        try {
-          const packed = parsePackedGistHex(ENC_GIST_URL);
-          gistUrl = await decryptAesGcm(packed.cipherHex, packed.nonceHex, packed.tagHex, cryptoKey);
-        } catch (err) {
-          if (err.message && err.message.startsWith("INVALID_")) {
-            throw new Error("埋め込みデータの形式が不正です。");
-          }
-          throw new Error(authFailedMsg);
+        function setStatus(statusType, labelText) {
+            const badge = document.getElementById('status-badge');
+            badge.innerText = labelText;
+            badge.className = "status-badge status-" + statusType;
         }
 
-        if (!isValidHttpsUrl(gistUrl)) {
-          throw new Error("復号されたGist URLが不正です。");
+        function hexToBytes(hex, expectedByteLen = null) {
+            if (typeof hex !== 'string' || hex.length === 0 || hex.length % 2 !== 0) {
+                throw new Error("INVALID_HEX_LENGTH");
+            }
+            if (!/^[0-9a-fA-F]+$/.test(hex)) {
+                throw new Error("INVALID_HEX_CHAR");
+            }
+            const byteLen = hex.length / 2;
+            if (expectedByteLen !== null && byteLen !== expectedByteLen) {
+                throw new Error("INVALID_HEX_BYTE_LENGTH");
+            }
+            const bytes = new Uint8Array(byteLen);
+            for (let i = 0; i < byteLen; i++) {
+                bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+            }
+            return bytes;
         }
 
-        // 2. Gist JSON の取得
-        let res;
-        try {
-          res = await fetch(gistUrl + "?_=" + Date.now(), { cache: "no-store" });
-        } catch {
-          throw new Error("ネットワークエラー: Gistを取得できませんでした。");
+        async function deriveAesGcmKey(pass) {
+            const passBuffer = new TextEncoder().encode(pass);
+            const keyHash = await crypto.subtle.digest('SHA-256', passBuffer);
+            return crypto.subtle.importKey(
+                'raw',
+                keyHash,
+                { name: 'AES-GCM' },
+                false,
+                ['decrypt']
+            );
         }
 
-        if (!res.ok) {
-          throw new Error("ネットワークエラー: Gistの応答が異常です (HTTP " + res.status + ")。");
+        async function decryptAesGcm(cipherHex, nonceHex, tagHex, cryptoKey) {
+            const nonceBytes = hexToBytes(nonceHex, NONCE_BYTE_LEN);
+            const tagBytes = hexToBytes(tagHex, TAG_BYTE_LEN);
+            const cipherBytes = hexToBytes(cipherHex, null);
+
+            const combined = new Uint8Array(cipherBytes.length + tagBytes.length);
+            combined.set(cipherBytes, 0);
+            combined.set(tagBytes, cipherBytes.length);
+
+            const decryptedBuffer = await crypto.subtle.decrypt(
+                {
+                    name: 'AES-GCM',
+                    iv: nonceBytes,
+                    tagLength: 128
+                },
+                cryptoKey,
+                combined
+            );
+
+            return new TextDecoder().decode(decryptedBuffer);
         }
 
-        // 3. JSON パースとバージョン/フィールド検証
-        let gistJson;
-        try {
-          gistJson = await res.json();
-        } catch {
-          throw new Error("GistデータのJSON形式が不正です。");
+        function parsePackedGistHex(packedHex) {
+            if (typeof packedHex !== 'string') {
+                throw new Error("INVALID_PACKED_FORMAT");
+            }
+            const trimmed = packedHex.trim();
+            if (trimmed.length <= NONCE_HEX_LEN + TAG_HEX_LEN || trimmed.length % 2 !== 0) {
+                throw new Error("INVALID_PACKED_LENGTH");
+            }
+            if (!/^[0-9a-fA-F]+$/.test(trimmed)) {
+                throw new Error("INVALID_PACKED_HEX");
+            }
+
+            const nonceHex = trimmed.slice(0, NONCE_HEX_LEN);
+            const tagHex = trimmed.slice(trimmed.length - TAG_HEX_LEN);
+            const cipherHex = trimmed.slice(NONCE_HEX_LEN, trimmed.length - TAG_HEX_LEN);
+
+            return { nonceHex, cipherHex, tagHex };
         }
 
-        if (!gistJson || typeof gistJson !== 'object') {
-          throw new Error("GistデータのJSON形式が不正です。");
+        function isValidHttpsUrl(urlStr) {
+            try {
+                const parsed = new URL(urlStr);
+                return parsed.protocol === 'https:';
+            } catch {
+                return false;
+            }
         }
 
-        if (gistJson.ENC_VERSION !== 2) {
-          throw new Error("未対応の暗号化バージョンです（ENC_VERSION: " + String(gistJson.ENC_VERSION ?? "不明") + "）。");
+        async function checkPass() {
+            const btn = document.getElementById('btn-enter');
+            const passInput = document.getElementById('pass-input');
+            const pass = passInput.value.trim();
+            const errorMsg = document.getElementById('error-msg');
+
+            if (!pass) return;
+            btn.disabled = true;
+            errorMsg.classList.add('hidden');
+
+            const authFailedMsg = "パスワードが違うか、データが破損・改ざんされています。";
+
+            try {
+                let cryptoKey;
+                try {
+                    cryptoKey = await deriveAesGcmKey(pass);
+                } catch {
+                    throw new Error(authFailedMsg);
+                }
+
+                // 1. ENC_GIST_URL の復号（認証成功前は外部通信しない）
+                let gistUrl = "";
+                try {
+                    const packed = parsePackedGistHex(ENC_GIST_URL);
+                    gistUrl = await decryptAesGcm(packed.cipherHex, packed.nonceHex, packed.tagHex, cryptoKey);
+                } catch (err) {
+                    if (err.message && err.message.startsWith("INVALID_")) {
+                        throw new Error("埋め込みデータの形式が不正です。");
+                    }
+                    throw new Error(authFailedMsg);
+                }
+
+                if (!isValidHttpsUrl(gistUrl)) {
+                    throw new Error("復号されたGist URLが不正です。");
+                }
+
+                // 2. Gist JSON の取得
+                let res;
+                try {
+                    res = await fetch(gistUrl + "?_=" + Date.now(), { cache: "no-store" });
+                } catch {
+                    throw new Error("ネットワークエラー: Gistを取得できませんでした。");
+                }
+
+                if (!res.ok) {
+                    throw new Error("ネットワークエラー: Gistの応答が異常です (HTTP " + res.status + ")。");
+                }
+
+                // 3. JSON パースとバージョン/フィールド検証
+                let gistJson;
+                try {
+                    gistJson = await res.json();
+                } catch {
+                    throw new Error("GistデータのJSON形式が不正です。");
+                }
+
+                if (!gistJson || typeof gistJson !== 'object') {
+                    throw new Error("GistデータのJSON形式が不正です。");
+                }
+
+                if (gistJson.ENC_VERSION !== 2) {
+                    throw new Error("未対応の暗号化バージョンです（ENC_VERSION: " + String(gistJson.ENC_VERSION ?? "不明") + "）。");
+                }
+
+                const { ENC_DATA, ENC_IV, ENC_TAG, updatedAt } = gistJson;
+
+                if (
+                    typeof ENC_DATA !== 'string' || ENC_DATA.length === 0 ||
+                    typeof ENC_IV !== 'string' || ENC_IV.length === 0 ||
+                    typeof ENC_TAG !== 'string' || ENC_TAG.length === 0
+                ) {
+                    throw new Error("Gistデータの必須フィールド（ENC_DATA / ENC_IV / ENC_TAG）が不足または不正です。");
+                }
+
+                // 4. Tunnel URL の復号（認証成功前に外部アクセスしない）
+                let realUrl = "";
+                try {
+                    realUrl = await decryptAesGcm(ENC_DATA, ENC_IV, ENC_TAG, cryptoKey);
+                } catch (err) {
+                    if (err.message && err.message.startsWith("INVALID_")) {
+                        throw new Error("Gist暗号データのHex形式または長さが不正です。");
+                    }
+                    throw new Error(authFailedMsg);
+                }
+
+                if (!isValidHttpsUrl(realUrl)) {
+                    throw new Error("復号されたTunnel URLの形式が不正です。");
+                }
+
+                // 認証・復号・URL検証がすべて完了してから表示・接続確認を行う
+                if (updatedAt) {
+                    document.getElementById('update-time').innerText = "更新: " + updatedAt + " (JST)";
+                }
+
+                const imgTester = new Image();
+                let isHandled = false;
+
+                const timer = setTimeout(() => {
+                    if (!isHandled) {
+                        isHandled = true;
+                        btn.disabled = false;
+                        setStatus("offline", "● OFFLINE");
+                        errorMsg.innerText = "エラー: サーバーが応答しません";
+                        errorMsg.classList.remove('hidden');
+                    }
+                }, 3000);
+
+                imgTester.onload = () => {
+                    if (isHandled) return;
+                    isHandled = true;
+                    clearTimeout(timer);
+                    btn.disabled = false;
+
+                    setStatus("online", "● ONLINE");
+                    document.getElementById('login-form').classList.add('hidden');
+
+                    const qrContainer = document.getElementById('qr-container');
+                    qrContainer.innerHTML = "";
+                    new QRCode(qrContainer, {
+                        text: realUrl,
+                        width: 200,
+                        height: 200
+                    });
+
+                    const linkElem = document.getElementById('access-link');
+                    linkElem.href = realUrl;
+                    linkElem.innerText = realUrl;
+                    document.getElementById('content').classList.remove('hidden');
+                };
+
+                imgTester.onerror = () => {
+                    if (isHandled) return;
+                    isHandled = true;
+                    clearTimeout(timer);
+                    btn.disabled = false;
+
+                    setStatus("offline", "● OFFLINE");
+                    errorMsg.innerText = "エラー: サーバーにアクセスできませんでした";
+                    errorMsg.classList.remove('hidden');
+                };
+
+                const baseUrl = realUrl.replace(/\/+$/, '');
+                imgTester.src = baseUrl + "/static/favicon.ico?_=" + Date.now();
+
+            } catch (e) {
+                btn.disabled = false;
+                errorMsg.innerText = e.message || authFailedMsg;
+                errorMsg.classList.remove('hidden');
+            }
         }
-
-        const { ENC_DATA, ENC_IV, ENC_TAG, updatedAt } = gistJson;
-
-        if (
-          typeof ENC_DATA !== 'string' || ENC_DATA.length === 0 ||
-          typeof ENC_IV !== 'string' || ENC_IV.length === 0 ||
-          typeof ENC_TAG !== 'string' || ENC_TAG.length === 0
-        ) {
-          throw new Error("Gistデータの必須フィールド（ENC_DATA / ENC_IV / ENC_TAG）が不足または不正です。");
-        }
-
-        // 4. Tunnel URL の復号（認証成功前に外部アクセスしない）
-        let realUrl = "";
-        try {
-          realUrl = await decryptAesGcm(ENC_DATA, ENC_IV, ENC_TAG, cryptoKey);
-        } catch (err) {
-          if (err.message && err.message.startsWith("INVALID_")) {
-            throw new Error("Gist暗号データのHex形式または長さが不正です。");
-          }
-          throw new Error(authFailedMsg);
-        }
-
-        if (!isValidHttpsUrl(realUrl)) {
-          throw new Error("復号されたTunnel URLの形式が不正です。");
-        }
-
-        // 認証・復号・URL検証がすべて完了してから表示・接続確認を行う
-        if (updatedAt) {
-          document.getElementById('update-time').innerText = "更新: " + updatedAt + " (JST)";
-        }
-
-        const imgTester = new Image();
-        let isHandled = false;
-
-        const timer = setTimeout(() => {
-          if (!isHandled) {
-            isHandled = true;
-            btn.disabled = false;
-            setStatus("offline", "● OFFLINE");
-            errorMsg.innerText = "エラー: サーバーが応答しません";
-            errorMsg.classList.remove('hidden');
-          }
-        }, 3000);
-
-        imgTester.onload = () => {
-          if (isHandled) return;
-          isHandled = true;
-          clearTimeout(timer);
-          btn.disabled = false;
-
-          setStatus("online", "● ONLINE");
-          document.getElementById('login-form').classList.add('hidden');
-
-          const qrContainer = document.getElementById('qr-container');
-          qrContainer.innerHTML = "";
-          new QRCode(qrContainer, {
-            text: realUrl,
-            width: 200,
-            height: 200
-          });
-
-          const linkElem = document.getElementById('access-link');
-          linkElem.href = realUrl;
-          linkElem.innerText = realUrl;
-          document.getElementById('content').classList.remove('hidden');
-        };
-
-        imgTester.onerror = () => {
-          if (isHandled) return;
-          isHandled = true;
-          clearTimeout(timer);
-          btn.disabled = false;
-
-          setStatus("offline", "● OFFLINE");
-          errorMsg.innerText = "エラー: サーバーにアクセスできませんでした";
-          errorMsg.classList.remove('hidden');
-        };
-
-        const baseUrl = realUrl.replace(/\/+$/, '');
-        imgTester.src = baseUrl + "/static/favicon.ico?_=" + Date.now();
-
-      } catch (e) {
-        btn.disabled = false;
-        errorMsg.innerText = e.message || authFailedMsg;
-        errorMsg.classList.remove('hidden');
-      }
-    }
-  </script>
+    </script>
 </body>
 
 </html>
